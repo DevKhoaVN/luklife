@@ -1,0 +1,36 @@
+@import "tailwindcss";
+
+
+/* Base typography cho toàn website */
+@layer base {
+    body {
+        @apply bg-white text-[#737373];
+    }
+
+    /* Title / heading */
+    h1,
+    h2,
+    h3,
+    h4,
+     {
+        @apply text-black font-semibold;
+    }
+
+
+    /* Nút chính  va title*/
+    .btn-primary{
+        @apply text-[#C92027] ;
+    }
+    .title-primary{
+        @apply text-[#C92127] ;
+    /* Giá sản phẩm */
+    }
+    .price {
+        @apply text-[#C92127] font-bold;
+    }
+
+    /* Text phụ */
+    .text-muted {
+        @apply text-[#737373];
+    }
+}
