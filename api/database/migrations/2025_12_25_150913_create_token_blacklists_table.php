@@ -25,7 +25,7 @@ return new class extends Migration
             $table->enum('token_type', ['access', 'refresh'])->default('access');
 
             $table->timestamp('expires_at');
-            $table->timestamp('revoked_at')->useCurrent();
+            $table->timestamp('revoked_at')->nullable();
 
             $table->string('reason')->nullable()
                 ->comment('logout, security, manual_revoke');
