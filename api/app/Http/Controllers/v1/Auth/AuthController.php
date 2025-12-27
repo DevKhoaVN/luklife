@@ -5,6 +5,7 @@ use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Services\AuthService;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class AuthController extends Controller{
 
@@ -49,17 +50,21 @@ class AuthController extends Controller{
     public function resetPassword(Request $request){
         // Reset password logic here
         $result = $this->authService->resetPassword($request->all(), $request);
-        return response()->json(['message' => 'Password has been reset']);
+        return response()->json($result);
     }
 
     public function logout(Request $request){
-        // Logout logic here
-        return response()->json(['message' => 'Logout successful']);
+
+        $user_id =  $request->attributes->get('user_id');
+
+        $result = $this->authService->logout((int)$user_id);
+        return response()->json($result)->withoutCookie('refresh_token');
     }
 
     public function refresh(Request $request){
         // Token refresh logic here
-        return response()->json(['message' => 'Token refreshed']);
+        $reuslt = $this->authService->refresh($request);
+        return response()->json($reuslt)->cookie('refresh_token', $result['token']['refresh_token'] ?? '', 60 * 24 * 30, null, null, false, true);
     }
 
 

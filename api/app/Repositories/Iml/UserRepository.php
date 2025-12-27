@@ -28,5 +28,9 @@ use App\Models\users;
     {
         return $this->user->where('email', $email)->first();
     }
+    public function findUserById(int $id)
+    {
+        return $this->user->where('id', $id)->first();
+    }
      
 }

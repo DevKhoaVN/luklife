@@ -53,16 +53,14 @@ class TokenService
             ], 
 
             [
-                [
                     'user_id'    => $user->id,
-                    'token_hash' => Hash::make($refreshToken),
+                    'token_hash' => hash('sha256', $refreshToken),
                     'token_type' => 'refresh',
                     'expires_at' => now()->addDays(7),
                     'revoked_at' => null,
                     'reason'     => null,
                     'ip_address' => $request->ip() ?? null,
                     'user_agent' => $request->userAgent() ?? null,
-                ]
            ]);
 
             return [
@@ -80,8 +78,9 @@ class TokenService
     public function revokeRefreshToken(int $userId)
     {
         $tokenRecord = $this->tokenRepo->findTokenByUserId($userId);
+
         if ($tokenRecord) {
-            $this->tokenRepo->deleteToken($tokenRecord->token);
+            $this->tokenRepo->deleteToken($tokenRecord->token_hash);
         }
     }
 

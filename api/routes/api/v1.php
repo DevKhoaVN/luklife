@@ -12,7 +12,7 @@ Route::prefix('auth')->group(function () {
 });
 
 
-Route::middleware('auth:api')->group(function () {
+Route::middleware('auth:api', 'can')->group(function () {
 
     // Auth protected
     Route::prefix('auth')->group(function () {

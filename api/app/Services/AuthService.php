@@ -49,6 +49,7 @@ class AuthService
     
             return [
                 'success' => true,
+                'message' => "Đăng nhập thành công",
                 'user' => [
                     'id' => $user->id,
                     'email' => $user->email,
@@ -95,7 +96,7 @@ class AuthService
 
             return [
                 'success' => true,
-                'message' => 'Đăng ký tài khoảnthành công.',
+                'message' => 'Đăng ký tài khoản thành công.',
                 'user' =>  [
                     'id' => $user->id,
                     'email' => $user->email,
@@ -132,10 +133,10 @@ class AuthService
             Cache::put("reset:otp:{$email}", $otp, now()->addMinute(2));
 
             // Gửi mail QUA QUEUE (chay background nha)
-            Mail::to("khoafullstackwork@gmail.com")->queue(new ResetPasswordOtpMail($otp));
+            Mail::to($email)->queue(new ResetPasswordOtpMail($otp));
             return [
                 'success' => true,
-                'message' => 'Nếu email tồn tại, link reset mật khẩu đã được gửi.',
+                'message' => 'Gửi email thành công, vui lòng kiểm tra email của bạn',
             ];
         } catch (Exception $e) {
             return [
@@ -257,7 +258,7 @@ class AuthService
         try{
 
             $tokenHash = hash('sha256', $refreshToken);
-            $token = $this->tokenService->findToken($refreshToken);
+            $token = $this->tokenService->findToken($tokenHash);
 
             if(!$token || !hash_equals($token->token_hash, $tokenHash) || $token->expires_at < now()){
                 throw new Exception('Refresh token không hợp lệ');
@@ -269,7 +270,7 @@ class AuthService
             }
 
             $generatedToken = $this->tokenService->createKeyToken($user, $request);
-
+            
             return [
                 'success' => true,
                 'tokens' => $generatedToken
