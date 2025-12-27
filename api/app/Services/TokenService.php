@@ -77,6 +77,17 @@ class TokenService
        }
     }
 
+    public function revokeRefreshToken(int $userId)
+    {
+        $tokenRecord = $this->tokenRepo->findTokenByUserId($userId);
+        if ($tokenRecord) {
+            $this->tokenRepo->deleteToken($tokenRecord->token);
+        }
+    }
+
+    public function findToken(string $token){
+        return $this->tokenRepo->findToken($token);
+    }
     // Validate refresh token và rotate (cấp cặp token mới, revoke refresh cũ)
 //     public function rotateRefreshToken(string $refreshToken, array $deviceInfo = []): array
 //     {

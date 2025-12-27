@@ -12,9 +12,9 @@ use App\Models\users;
     {
       $this->user = $user;
     }
-    
-    public function createUser(array $data){
-      return $this->user->create($data);
+
+    public function createUser(array $attributes, array $values){
+      return $this->user->updateOrCreate($attributes, $values);
     }
 
     public function deleteUser(array $data){
@@ -24,4 +24,9 @@ use App\Models\users;
     public function updateUser(string $email){
 
     }
+    public function findUserByEmail(string $email)
+    {
+        return $this->user->where('email', $email)->first();
+    }
+     
 }

@@ -12,7 +12,15 @@ class UserService {
     {
         $this->userRepo = $userRepo;
     }
-    public function createUser(array $data){
-        return $this->userRepo->createUser($data);
+    public function createUser(array $attributes, array $values){
+        return $this->userRepo->createUser($attributes, $values);
+    }
+    public function findUserByEmail(string $email)
+    {
+        return $this->userRepo->findUserByEmail($email);
+    }
+    public function findUserById(int $id)
+    {
+        return $this->userRepo->findUserById($id);
     }
 }

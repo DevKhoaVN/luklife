@@ -20,7 +20,7 @@ class AuthController extends Controller{
 
         $result = $this->authService->login($validData, $request);
         
-        return response()->json($result);
+        return response()->json($result)->cookie('refresh_token', $result['token']['refresh_token'] ?? '', 60 * 24 * 30, null, null, false, true);
     }
 
     public function register(RegisterRequest $request){
@@ -28,16 +28,27 @@ class AuthController extends Controller{
         $validData = $request->validated();
 
         $result = $this->authService->register($validData, $request);
-        return response() ->json($result);
+        return response() ->json($result)->cookie('refresh_token', $result['token']['refresh_token'] ?? '', 60 * 24 * 30, null, null, false, true);;
     }
 
     public function forgotPassword(Request $request){
         // Forgot password logic here
-        return response()->json(['message' => 'Password reset link sent']);
+        $email = $request->input('email');
+
+        $result = $this->authService->forgotPassword($email);
+
+        return response()->json($result);
     }
 
+    public function verifyOtp(Request $request){
+
+        $result = $this->authService->verifyOtp($request->all());
+
+        return response()->json($result);
+    }
     public function resetPassword(Request $request){
         // Reset password logic here
+        $result = $this->authService->resetPassword($request->all(), $request);
         return response()->json(['message' => 'Password has been reset']);
     }
 

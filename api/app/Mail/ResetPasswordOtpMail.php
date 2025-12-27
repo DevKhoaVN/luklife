@@ -1,0 +1,60 @@
+<?php
+
+namespace App\Mail;
+
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue; 
+use Illuminate\Mail\Mailables\Address;
+use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Content;
+use Illuminate\Mail\Mailables\Envelope;
+use Illuminate\Queue\SerializesModels;
+
+class ResetPasswordOtpMail extends Mailable
+{
+    use Queueable, SerializesModels;
+
+    protected $otp;
+    /**
+     * Create a new message instance.
+     */
+    public function __construct($otp, $recipientEmail= null)
+    {
+        //init otp
+        $this->otp = $otp;
+    }
+
+    /**
+     * Get the message envelope.
+     */
+    public function envelope(): Envelope
+    {
+        return new Envelope(
+            subject: 'Mã OTP đặt lại mật khẩu - Luklife',
+            from: new Address('noreply@luklife.com'),
+        );
+    }
+
+    /**
+     * Get the message content definition.
+     */
+    public function content(): Content
+    {
+        return new Content(
+            markdown: 'emails.reset_otp',
+            with: [
+                'otp' => $this->otp
+            ],
+        );
+    }
+
+    /**
+     * Get the attachments for the message.
+     *
+     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
+     */
+    public function attachments(): array
+    {
+        return [];
+    }
+}

@@ -24,4 +24,7 @@ class TokenRepositories implements TokenRepositoriesInterface
     public function findToken(string $token){
         return $this->token->where('token', $token)->first();
     }
+    public function findTokenByUserId(int $userId){
+        return $this->token->where('user_id', $userId)->first();
+    }
 }
