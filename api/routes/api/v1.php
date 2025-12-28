@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\v1\Auth\AuthController;
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\v1\Admin\CategoriesController ;
 Route::prefix('auth')->group(function () {
     Route::post('register', [AuthController::class, 'register']);
     Route::post('login', [AuthController::class, 'login']);
@@ -22,4 +22,11 @@ Route::middleware('auth:api', 'can')->group(function () {
     });
 
     // User routes
+});
+
+Route::prefix('category')->group(function () {
+    Route::post('index', [CategoriesController::class, 'index']);
+    Route::post('store', [CategoriesController::class, 'store']);
+    Route::post('update', [CategoriesController::class, 'update']);
+    Route::post('delete', [CategoriesController::class, 'destroy']);
 });
