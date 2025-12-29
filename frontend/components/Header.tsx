@@ -1,5 +1,12 @@
 import React, { useState } from "react";
 import logo from "../assets/header_logo.svg";
+import { Swiper, SwiperSlide } from "swiper/react";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
+
+import { Navigation, Pagination, Autoplay } from "swiper/modules";
+
 import {
   Search,
   PackageSearch,
@@ -106,6 +113,24 @@ const MENU_CATEGORIES = [
           { id: 331, label: "Váy ngắn" },
           { id: 332, label: "Váy midi" },
           { id: 333, label: "Váy maxi" },
+        ],
+      },
+      {
+        id: 31,
+        label: "Áo",
+        children: [
+          { id: 311, label: "Áo thun" },
+          { id: 312, label: "Áo sơ mi" },
+          { id: 313, label: "Áo kiểu" },
+        ],
+      },
+      {
+        id: 31,
+        label: "Áo",
+        children: [
+          { id: 311, label: "Áo thun" },
+          { id: 312, label: "Áo sơ mi" },
+          { id: 313, label: "Áo kiểu" },
         ],
       },
     ],
@@ -215,18 +240,33 @@ const MenuItem = ({ item, level = 1, onClose }) => {
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false); // Trạng thái đăng nhập
+  const [hoveredCategory, setHoveredCategory] = useState(null);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
-
+  // Dữ liệu mẫu
+  const slidesData = [
+    {
+      id: 1,
+      image_url:
+        "https://s3-hni02.higiocloud.vn/gppm2/prod/cms/17667138083114784.jpg",
+      alt: "Banner Thời trang Hè 2024",
+    },
+    {
+      id: 2,
+      image_url:
+        "https://s3-hni02.higiocloud.vn/gppm2/prod/cms/17645741711879463.jpg",
+      alt: "Banner Khuyến mãi lớn",
+    },
+  ];
   const closeMobileMenu = () => {
     setIsMobileMenuOpen(false);
   };
 
   return (
     <>
-      <header className="w-full bg-[#f9f3e8] shadow-sm relative z-40">
+      <header className="w-full relative z-40">
         {/* TOP BAR */}
         <div className="bg-red-600 text-white text-[8px] sm:text-sm font-bold text-center py-2 px-4">
           GIỎ HÀNG TIẾT KIỆM ONLINE{" "}
@@ -234,7 +274,6 @@ export default function Header() {
             &lt;&lt; MUA NGAY &gt;&gt;
           </a>
         </div>
-
         {/* MAIN HEADER */}
         <div className="max-w-7xl mx-auto px-4">
           {/* Thẻ cha này có justify-between */}
@@ -296,22 +335,137 @@ export default function Header() {
         </div>
 
         {/* NAVBAR (Desktop) */}
-        <nav className="bg-white shadow-gray-300 hidden lg:block">
-          <div className="max-w-7xl mx-auto px-4">
-            <ul className="flex gap-8 h-12 items-center text-sm font-medium overflow-x-auto whitespace-nowrap">
-              {MENU_CATEGORIES.map((link) => (
-                <li
-                  key={link.id}
-                  className="hover:text-red-600 transition cursor-pointer"
-                >
-                  <span className={link.class || "text-gray-800"}>
-                    {link.label}
-                  </span>
-                </li>
-              ))}
-            </ul>
+        <nav className="bg-white border-b border-gray-200 hidden lg:block relative z-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            {/* Container phải là relative để menu con căn theo nó */}
+            <div className="relative">
+              <ul className="flex items-center gap-8">
+                {MENU_CATEGORIES.map((link) => (
+                  <li
+                    key={link.id}
+                    className="group py-4" // Padding dọc tạo độ thoáng cho thanh menu
+                    onMouseEnter={() => setHoveredCategory(link.id)}
+                    onMouseLeave={() => setHoveredCategory(null)}
+                  >
+                    <a
+                      href={`/category/${link.id}`}
+                      className={`
+                    flex items-center gap-1 text-black text-sm font-bold hover:text-[#C92027] tracking-wide  transition-colors duration-200
+                  `}
+                    >
+                      {link.label}
+                      {/* Hiển thị mũi tên nếu có menu con */}
+                      {link.children && link.children.length > 0 && (
+                        <ChevronDown
+                          size={14}
+                          className={`transition-transform duration-200 ${
+                            hoveredCategory === link.id ? "rotate-180" : ""
+                          }`}
+                        />
+                      )}
+                    </a>
+
+                    {/* --- MEGA MENU START --- */}
+                    {/* Logic: Hiển thị khi hover HOẶC khi đang hover vào chính menu con đó */}
+                    {link.children && (
+                      <div
+                        className={`
+                      absolute left-0 top-full w-full bg-white shadow-xl border-t border-gray-100 rounded-b-lg
+                      transition-all duration-300 ease-in-out origin-top
+                      ${
+                        hoveredCategory === link.id
+                          ? "opacity-100 visible translate-y-0"
+                          : "opacity-0 invisible -translate-y-2"
+                      }
+                    `}
+                      >
+                        <div className="grid grid-cols-4 gap-8 p-8">
+                          {link.children.map((level2) => (
+                            <div
+                              key={level2.id}
+                              className="flex flex-col space-y-3"
+                            >
+                              {/* Level 2: Tiêu đề nhóm */}
+                              <a
+                                href={`/category/${level2.id}`}
+                                className="text-base font-bold text-gray-900 hover:text-[#C92027] transition-colors border-b pb-2 mb-1 border-gray-100"
+                              >
+                                {level2.label}
+                              </a>
+
+                              {/* Level 3: Danh sách link chi tiết */}
+                              {level2.children &&
+                                level2.children.length > 0 && (
+                                  <ul className="space-y-4">
+                                    {level2.children.map((level3) => (
+                                      <li key={level3.id}>
+                                        <a
+                                          href={`/category/${level3.id}`}
+                                          className="text-sm font-medium text-gray-600 hover:text-[#C92027] hover:translate-x-1 transition-all duration-200 block"
+                                        >
+                                          {level3.label}
+                                        </a>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                )}
+                            </div>
+                          ))}
+
+                          {/* Optional: Banner quảng cáo hoặc hình ảnh bên phải menu */}
+                        </div>
+                      </div>
+                    )}
+                    {/* --- MEGA MENU END --- */}
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </nav>
+
+        {/* Banner */}
+        <div className="h-full border-2xl">
+          {/* Swiper sẽ mở rộng theo chiều ngang của div cha (max-w-7xl nếu có) */}
+          <Swiper
+            modules={[Navigation, Pagination, Autoplay]}
+            // Cấu hình cơ bản
+            slidesPerView={1}
+            loop={true}
+            // Tùy chỉnh Navigation và Pagination
+
+            pagination={{
+              clickable: true,
+              dynamicBullets: true, // Dots sẽ thu nhỏ khi ở xa slide hiện tại
+            }}
+            autoplay={{
+              delay: 4000, // Tăng delay lên 4 giây
+              disableOnInteraction: false,
+            }}
+            // Class tối ưu hóa hiển thị
+            className="main-banner-swiper w-full max-w-7xl overflow-hidden"
+          >
+            {slidesData.map((slide) => (
+              <SwiperSlide
+                key={slide.id}
+                // Loại bỏ class cũ không tồn tại (color, text-3xl)
+                className="relative w-full h-full"
+              >
+                {/* 🌟 SỬA LỖI QUAN TRỌNG: Dùng thẻ <img> để hiển thị URL */}
+                <img
+                  src={slide.image_url}
+                  alt={slide.alt}
+                  // Tối ưu hóa class cho hình ảnh
+                  className="w-full h-full object-cover transition-transform duration-500 hover:scale-[1.01]"
+                  loading="lazy"
+                />
+
+                {/* Ví dụ về lớp phủ (Overlay) hoặc Văn bản nổi (Tùy chọn) */}
+                <div className="absolute inset-0 bg-black/10 hover:bg-black/0 transition-colors duration-300"></div>
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        </div>
       </header>
 
       {/* MOBILE SIDEBAR MENU */}
@@ -403,3 +557,258 @@ export default function Header() {
     </>
   );
 }
+
+// import React, { useState, useEffect } from "react";
+// import { ChevronRight, Menu, ChevronDown } from "lucide-react";
+//
+// // DỮ LIỆU MẪU GIẢ LẬP (Cấu trúc 3 cấp + Hình ảnh banner)
+// const CATEGORIES_DATA = [
+//   {
+//     id: "nu",
+//     label: "Thời Trang Nữ",
+//     banner: "https://placehold.co/300x400/fee2e2/dc2626?text=Sale+Nu+50%", // Ảnh giả lập
+//     children: [
+//       {
+//         id: "nu-ao",
+//         label: "Áo Nữ",
+//         children: [
+//           { id: "na1", label: "Áo Polo" },
+//           { id: "na2", label: "Áo Chống Nắng" },
+//           { id: "na3", label: "Áo Sơ Mi" },
+//           { id: "na4", label: "Áo Thun" },
+//         ],
+//       },
+//       {
+//         id: "nu-quan",
+//         label: "Quần & Chân Váy",
+//         children: [
+//           { id: "nq1", label: "Quần Jeans" },
+//           { id: "nq2", label: "Chân Váy" },
+//           { id: "nq3", label: "Quần Short" },
+//         ],
+//       },
+//       {
+//         id: "nu-phukien",
+//         label: "Phụ Kiện Nữ",
+//         children: [
+//           { id: "np1", label: "Túi Xách" },
+//           { id: "np2", label: "Giày Cao Gót" },
+//         ],
+//       },
+//     ],
+//   },
+//   {
+//     id: "nam",
+//     label: "Thời Trang Nam",
+//     banner: "https://placehold.co/300x400/e0f2fe/0284c7?text=Man+Collection",
+//     children: [
+//       {
+//         id: "nam-ao",
+//         label: "Áo Nam",
+//         children: [
+//           { id: "ma1", label: "Áo Polo" },
+//           { id: "ma2", label: "Sơ Mi Nam" },
+//           { id: "ma3", label: "Áo Vest" },
+//         ],
+//       },
+//       {
+//         id: "nam-quan",
+//         label: "Quần Nam",
+//         children: [
+//           { id: "mq1", label: "Quần Âu" },
+//           { id: "mq2", label: "Quần Kaki" },
+//           { id: "mq3", label: "Quần Short" },
+//         ],
+//       },
+//     ],
+//   },
+//   {
+//     id: "giadung",
+//     label: "Gia Dụng & Đời Sống",
+//     banner: "https://placehold.co/300x400/f0fdf4/16a34a?text=Home+Decor",
+//     children: [
+//       {
+//         id: "gd1",
+//         label: "Phòng Khách",
+//         children: [
+//           { id: "pk1", label: "Sofa" },
+//           { id: "pk2", label: "Đèn" },
+//         ],
+//       },
+//       {
+//         id: "gd2",
+//         label: "Phòng Bếp",
+//         children: [
+//           { id: "pb1", label: "Nồi Chảo" },
+//           { id: "pb2", label: "Bát Đĩa" },
+//         ],
+//       },
+//     ],
+//   },
+//   { id: "mypham", label: "Mỹ Phẩm", children: [] }, // Ví dụ không có con
+//   { id: "treem", label: "Trẻ Em", children: [] },
+// ];
+//
+// const Header = () => {
+//   // activeCategory: Lưu ID của danh mục Cấp 1 đang được hover ở cột trái
+//   // Default lấy cái đầu tiên để cột phải không bị trống lúc mới mở
+//   const [activeCategoryId, setActiveCategoryId] = useState(
+//     CATEGORIES_DATA[0].id
+//   );
+//
+//   // State để điều khiển việc hiển thị toàn bộ menu (khi hover vào chữ "Sản Phẩm")
+//   const [isMenuVisible, setIsMenuVisible] = useState(false);
+//
+//   // Tìm data của danh mục đang active để hiển thị bên phải
+//   const activeCategoryData = CATEGORIES_DATA.find(
+//     (c) => c.id === activeCategoryId
+//   );
+//
+//   return (
+//     <nav className="bg-white border-b border-gray-200 relative">
+//       <div className="max-w-7xl mx-auto px-4">
+//         <div className="flex items-center h-16 gap-8">
+//           {/* --- LOGO --- */}
+//           <div className="text-2xl font-bold text-red-600 tracking-tighter">
+//             TOKYOLIFE
+//           </div>
+//
+//           {/* --- MAIN NAVIGATION --- */}
+//           <ul className="flex gap-6 h-full items-center">
+//             {/* MENU ITEM CÓ MEGA MENU (SẢN PHẨM) */}
+//             <li
+//               className="h-full flex items-center group"
+//               onMouseEnter={() => setIsMenuVisible(true)}
+//               onMouseLeave={() => setIsMenuVisible(false)}
+//             >
+//               <a
+//                 href="/san-pham"
+//                 className="flex items-center gap-1 font-bold text-gray-800 uppercase text-sm hover:text-red-600 cursor-pointer py-4"
+//               >
+//                 <Menu size={18} /> Danh mục sản phẩm <ChevronDown size={14} />
+//               </a>
+//
+//               {/* --- MEGA MENU CONTAINER --- */}
+//               {isMenuVisible && (
+//                 <div className="absolute top-full left-0 w-full bg-white shadow-2xl border-t border-gray-100 z-50 h-[450px]">
+//                   <div className="max-w-7xl mx-auto h-full flex">
+//                     {/* 1. CỘT TRÁI: DANH SÁCH CẤP 1 (SIDEBAR) */}
+//                     <div className="w-64 border-r border-gray-100 h-full overflow-y-auto bg-gray-50/50">
+//                       <ul className="py-2">
+//                         {CATEGORIES_DATA.map((cat) => (
+//                           <li
+//                             key={cat.id}
+//                             onMouseEnter={() => setActiveCategoryId(cat.id)} // Hover vào đâu, cột phải đổi theo đó
+//                             className={`
+//                               px-5 py-3 cursor-pointer flex justify-between items-center text-sm font-medium transition-all
+//                               ${
+//                                 activeCategoryId === cat.id
+//                                   ? "bg-white text-red-600 border-l-4 border-red-600 shadow-sm"
+//                                   : "text-gray-600 hover:bg-white hover:text-red-600"
+//                               }
+//                             `}
+//                           >
+//                             {cat.label}
+//                             {/* Chỉ hiện mũi tên nếu đang active */}
+//                             {activeCategoryId === cat.id && (
+//                               <ChevronRight size={14} />
+//                             )}
+//                           </li>
+//                         ))}
+//                       </ul>
+//                     </div>
+//
+//                     {/* 2. CỘT PHẢI: CHI TIẾT CẤP 2 & 3 + BANNER */}
+//                     <div className="flex-1 p-8 h-full overflow-y-auto">
+//                       {activeCategoryData && (
+//                         <div className="flex gap-8">
+//                           {/* Khu vực Grid Links */}
+//                           <div className="flex-1 grid grid-cols-3 gap-y-8 gap-x-4 content-start">
+//                             {activeCategoryData.children &&
+//                             activeCategoryData.children.length > 0 ? (
+//                               activeCategoryData.children.map((childL2) => (
+//                                 <div key={childL2.id}>
+//                                   {/* Cấp 2: Tiêu đề đậm */}
+//                                   <a
+//                                     href={`/c/${childL2.id}`}
+//                                     className="block font-bold text-gray-900 text-sm mb-3 hover:text-red-600"
+//                                   >
+//                                     {childL2.label}
+//                                   </a>
+//                                   {/* Cấp 3: List nhỏ */}
+//                                   <ul className="space-y-2">
+//                                     {childL2.children?.map((childL3) => (
+//                                       <li key={childL3.id}>
+//                                         <a
+//                                           href={`/c/${childL3.id}`}
+//                                           className="text-sm text-gray-500 hover:text-red-600 hover:underline transition-all"
+//                                         >
+//                                           {childL3.label}
+//                                         </a>
+//                                       </li>
+//                                     ))}
+//                                   </ul>
+//                                 </div>
+//                               ))
+//                             ) : (
+//                               <div className="col-span-3 text-gray-400 italic">
+//                                 Đang cập nhật danh mục...
+//                               </div>
+//                             )}
+//                           </div>
+//
+//                           {/* Khu vực Banner Hình Ảnh (Bên phải cùng) */}
+//                           <div className="w-64 shrink-0 hidden lg:block">
+//                             {activeCategoryData.banner ? (
+//                               <div className="relative group overflow-hidden rounded-lg h-full max-h-[350px]">
+//                                 <img
+//                                   src={activeCategoryData.banner}
+//                                   alt={activeCategoryData.label}
+//                                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+//                                 />
+//                                 <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors"></div>
+//                                 <div className="absolute bottom-4 left-4 right-4">
+//                                   <button className="w-full bg-white/90 hover:bg-white text-gray-900 text-xs font-bold py-2 px-4 rounded shadow-lg transition-all">
+//                                     Xem ngay
+//                                   </button>
+//                                 </div>
+//                               </div>
+//                             ) : (
+//                               <div className="bg-gray-100 h-full rounded flex items-center justify-center text-gray-400 text-xs">
+//                                 No Banner
+//                               </div>
+//                             )}
+//                           </div>
+//                         </div>
+//                       )}
+//                     </div>
+//                   </div>
+//                 </div>
+//               )}
+//             </li>
+//
+//             {/* CÁC MENU KHÁC (KHÔNG CÓ DROPDOWN) */}
+//             <li>
+//               <a
+//                 href="#"
+//                 className="font-semibold text-sm hover:text-red-600 transition"
+//               >
+//                 Tin tức
+//               </a>
+//             </li>
+//             <li>
+//               <a
+//                 href="#"
+//                 className="font-semibold text-sm hover:text-red-600 transition"
+//               >
+//                 Hệ thống cửa hàng
+//               </a>
+//             </li>
+//           </ul>
+//         </div>
+//       </div>
+//     </nav>
+//   );
+// };
+//
+// export default Header;

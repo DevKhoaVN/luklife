@@ -7,6 +7,7 @@ use Spatie\Sluggable\SlugOptions;
 use App\Models\categories as Category;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Spatie\Sluggable\HasSlug;
+use App\Models\products as Product;
 
 class categories extends Model
 {
@@ -52,6 +53,12 @@ class categories extends Model
     public function descendants()
     {
         return $this->children()->with('descendants');
+    }
+
+    // Many-to-many với Product
+    public function products()
+    {
+        return $this->belongsToMany(Product::class, 'product_categories');
     }
 
 }
