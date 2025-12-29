@@ -2,24 +2,32 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\categories as Category;
+
 class products extends Model
 {
-    //
-    protected $fillable = ['thumbnail', 'name', 'slug', 'description', 'is_active', 'is_featured'];
+    use HasFactory;
 
-    // Many-to-many với Category
+    protected $table = 'products';
+
+    protected $fillable = [
+        'thumbnail',
+        'name',
+        'slug',
+        'price',
+        'discount_percentage',
+        'description',
+        'is_active',
+        'is_featured',
+    ];
+    public function variants()
+    {
+        return $this->hasMany(product_variants::class, 'product_id', 'id');
+    }
+
     public function categories()
     {
-        return $this->belongsToMany(Category::class, 'product_categories');
-    }
-    public function getOriginalPriceAttribute(): ?float
-    {
-        if ($this->discount_percentage == 0) {
-            return null; // không có giảm giá
-        }
-
-        return round($this->price / (1 - $this->discount_percentage / 100), 0);
+        return $this->belongsToMany(categories::class, 'product_categories', 'product_id', 'category_id');
     }
 }

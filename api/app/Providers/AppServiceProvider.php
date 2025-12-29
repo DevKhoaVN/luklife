@@ -10,6 +10,8 @@ use App\Repositories\Contracts\UserRepositoriesInterface;
 use App\Repositories\Iml\CategoriesRepositories;
 use App\Repositories\Iml\TokenRepositories;
 use App\Repositories\Iml\UserRepository;
+use App\Repositories\Contracts\ProductRepositoriesInterface;
+use App\Repositories\Iml\ProductRepositories;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -22,6 +24,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(UserRepositoriesInterface::class, UserRepository::class);
         $this->app->bind(TokenRepositoriesInterface::class, TokenRepositories::class);
         $this->app->bind(CategoriesRepositoriesInterface::class, CategoriesRepositories::class);
+        $this->app->bind(ProductRepositoriesInterface::class, ProductRepositories::class);
     }
 
     /**

@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Repositories\Iml;
+
 use App\Repositories\Contracts\ProductRepositoriesInterface;
 use App\Models\products as Product;
 use Illuminate\Http\UploadedFile;
@@ -23,7 +24,8 @@ class ProductRepositories implements ProductRepositoriesInterface
     /**
      * Lấy tất cả sản phẩm (collection, thường dùng cho admin hoặc export)
      */
-    public function all(int $page = 1, array $columns = ['*']){
+    public function all(int $page = 1, array $columns = ['*'])
+    {
 
         return $this->product
             ->where('is_active', true)
@@ -33,7 +35,8 @@ class ProductRepositories implements ProductRepositoriesInterface
     /**
      * Lấy danh sách sản phẩm có phân trang (frontend/admin list)
      */
-    public function paginate(int $page = 15, array $columns = ['*']){
+    public function paginate(int $page = 15, array $columns = ['*'])
+    {
         return $this->product
             ->where('is_active', true)
             ->orderBy('created_at', 'desc')
@@ -43,7 +46,8 @@ class ProductRepositories implements ProductRepositoriesInterface
     /**
      * Tìm sản phẩm theo ID
      */
-    public function findById(int $id, array $columns = ['*']){
+    public function findById(int $id, array $columns = ['*'])
+    {
         return $this->product
             ->select($columns)
             ->where('is_active', true)
@@ -53,7 +57,8 @@ class ProductRepositories implements ProductRepositoriesInterface
     /**
      * Tìm sản phẩm theo slug (dùng cho chi tiết sản phẩm)
      */
-    public function findBySlug(string $slug, array $columns = ['*']){
+    public function findBySlug(string $slug, array $columns = ['*'])
+    {
         return $this->product
             ->select($columns)
             ->where('slug', $slug)
@@ -64,11 +69,12 @@ class ProductRepositories implements ProductRepositoriesInterface
     /**
      * Sync (đồng bộ) categories – xóa cũ, thêm mới (phổ biến nhất khi edit)
      */
-    public function syncCategories(int $productId, array $categoryIds){
+    public function syncCategories(int $productId, array $categoryIds)
+    {
         $product = $this->product->findOrFail($productId);
         $product->categories()->sync($categoryIds);
     }
-    
+
     /**
      * Tạo sản phẩm mới
      */
@@ -93,11 +99,11 @@ class ProductRepositories implements ProductRepositoriesInterface
     /**
      * Cập nhật sản phẩm theo ID
      */
-    public function update(int $id, array $data){
+    public function update(int $id, array $data)
+    {
         // Xử lý upload thumbnail
         if (isset($data['image']) && $data['image'] instanceof UploadedFile) {
             $uploadedFile = $data['image'];
-
             $path = Storage::putFile(self::IMAGE_PATH, $uploadedFile);
 
             $fileName = str_replace('public/', '', $path);
@@ -119,7 +125,8 @@ class ProductRepositories implements ProductRepositoriesInterface
     /**
      * Xóa sản phẩm theo ID (hard delete hoặc soft delete tùy model)
      */
-    public function delete(int $id){
+    public function delete(int $id)
+    {
         $product = $this->product->findOrFail($id);
         return $product->delete();
     }
@@ -127,7 +134,8 @@ class ProductRepositories implements ProductRepositoriesInterface
     /**
      * Lấy sản phẩm nổi bật (is_featured = true)
      */
-    public function getFeatured(int $limit = 10){
+    public function getFeatured(int $limit = 10)
+    {
         return $this->product
             ->where('is_active', true)
             ->where('is_featured', true)
@@ -139,7 +147,8 @@ class ProductRepositories implements ProductRepositoriesInterface
     /**
      * Tìm kiếm sản phẩm bằng fulltext (name + description)
      */
-    public function search(string $query, int $page){
+    public function search(string $query, int $page)
+    {
 
         return $this->product->newQuery()
             ->where('is_active', true)
@@ -147,6 +156,4 @@ class ProductRepositories implements ProductRepositoriesInterface
             ->orderBy('created_at', 'desc')
             ->paginate(self::PER_PAGE, ['*'], 'page', $page);
     }
-
 }
-
