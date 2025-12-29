@@ -17,12 +17,15 @@ return new class extends Migration
             $table->string('thumbnail')->nullable();
             $table->string('name');
             $table->string('slug')->unique();
+            $table->decimal('price', 15, 2)->default(0.00);
+            $table->unsignedTinyInteger('discount_percentage')->default(0);
             $table->text('description')->nullable();
             $table->boolean('is_active')->default(true);
             $table->boolean('is_featured')->default(false);
             $table->timestamps();
 
             $table->index('slug', 'idx_slug');
+            $table->index('price', 'idx_price');
             $table->index('is_active', 'idx_is_active');
         });
         // Add fulltext index for name and description

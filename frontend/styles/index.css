@@ -33,4 +33,32 @@
     .text-muted {
         @apply text-[#737373];
     }
+        /* Tạo hiệu ứng nét đứt dọc bên phải cho phần thông tin */
+        .coupon-separator::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: -1px;
+            /* Đặt gần sát mép phải */
+            width: 1px;
+            /* Độ dày của đường nét đứt */
+            height: 100%;
+            /* Tạo đường nét đứt (dots/dashes) */
+            background-image: repeating-linear-gradient(180deg, #ccc, #ccc 5px, transparent 5px, transparent 10px);
+            background-size: 100% 100%;
+        }
+    
+        /* Tạo hiệu ứng bo tròn góc bị khoét (tùy chọn) */
+        .coupon-left-end {
+            /* Đặt nửa hình tròn màu trắng che lên viền */
+            position: absolute;
+            top: 50%;
+            right: -10px;
+            /* Vị trí để nửa hình tròn che vào viền */
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            background-color: white;
+            border-radius: 50%;
+        }
 }

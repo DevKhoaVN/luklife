@@ -17,7 +17,6 @@ return new class extends Migration
             $table->string('sku', 100)->unique();
             $table->string('color', 50)->nullable();
             $table->string('size', 50)->nullable();
-            $table->decimal('price', 15, 2);
             $table->decimal('sale_price', 15, 2)->nullable();
             $table->integer('stock_quantity')->default(0);
             $table->string('image_url')->nullable();
@@ -27,7 +26,7 @@ return new class extends Migration
 
             $table->index('product_id', 'idx_product_id');
             $table->index('sku', 'idx_sku');
-            $table->index('price', 'idx_price');
+          
         });
     }
 
