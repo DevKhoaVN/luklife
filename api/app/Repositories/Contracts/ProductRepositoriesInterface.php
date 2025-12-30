@@ -1,10 +1,13 @@
 <?php
+
 namespace App\Repositories\Contracts;
+
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use App\Models\products as Product;
 
-interface ProductRepositoriesInterface {
+interface ProductRepositoriesInterface
+{
     /**
      * Lấy tất cả sản phẩm (collection, thường dùng cho admin hoặc export)
      */
@@ -29,7 +32,7 @@ interface ProductRepositoriesInterface {
      * Sync (đồng bộ) categories – xóa cũ, thêm mới (phổ biến nhất khi edit)
      */
     public function syncCategories(int $productId, array $categoryIds);
-    
+
     /**
      * Tạo sản phẩm mới
      */
@@ -55,4 +58,5 @@ interface ProductRepositoriesInterface {
      */
     public function search(string $query, int $page);
 
+    public function getAll();
 }

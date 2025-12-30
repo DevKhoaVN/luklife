@@ -2,8 +2,9 @@
 
 use App\Http\Controllers\v1\Auth\AuthController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\v1\Admin\CategoriesController ;
-use App\Http\Controllers\v1\Products\ProductController ;
+use App\Http\Controllers\v1\Admin\CategoriesController;
+use App\Http\Controllers\v1\Products\ProductController;
+
 Route::prefix('auth')->group(function () {
     Route::post('register', [AuthController::class, 'register']);
     Route::post('login', [AuthController::class, 'login']);
@@ -32,10 +33,8 @@ Route::prefix('category')->group(function () {
     Route::post('delete', [CategoriesController::class, 'destroy']);
 });
 Route::prefix('products')->group(function () {
-//    Route::get('index', [ProductController::class, 'index']);
+    Route::get('index', [ProductController::class, 'index']);
     Route::post('store', [ProductController::class, 'store']);
-//    Route::post('update', [ProductController::class, 'update']);
-//    Route::post('delete', [ProductController::class, 'destroy']);
+    //    Route::post('update', [ProductController::class, 'update']);
+    //    Route::post('delete', [ProductController::class, 'destroy']);
 });
-
-

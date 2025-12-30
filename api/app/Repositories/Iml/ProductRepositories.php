@@ -156,4 +156,11 @@ class ProductRepositories implements ProductRepositoriesInterface
             ->orderBy('created_at', 'desc')
             ->paginate(self::PER_PAGE, ['*'], 'page', $page);
     }
+
+    public function getAll()
+    {
+        return $this->product->with(['variants', 'categories'])
+            ->latest()
+            ->paginate(10);
+    }
 }
