@@ -7,6 +7,7 @@ use App\Http\Requests\StoreProductRequest;
 use App\Services\ProductService;
 use Illuminate\Http\JsonResponse;
 use App\Http\Requests;
+use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
@@ -31,7 +32,7 @@ class ProductController extends Controller
             return response()->json(['message' => $e->getMessage()], 500);
         }
     }
-    public function index(StoreProductRequest $request)
+    public function index(Request $request)
     {
         try {
             $products = $this->productService->getAllProduct();
