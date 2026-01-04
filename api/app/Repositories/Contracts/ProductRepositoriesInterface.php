@@ -31,7 +31,7 @@ interface ProductRepositoriesInterface
     /**
      * Sync (đồng bộ) categories – xóa cũ, thêm mới (phổ biến nhất khi edit)
      */
-    public function syncCategories(int $productId, array $categoryIds);
+    // public function syncCategories(int $productId, array $categoryIds);
 
     /**
      * Tạo sản phẩm mới

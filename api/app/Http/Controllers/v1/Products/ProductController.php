@@ -7,6 +7,7 @@ use App\Http\Requests\StoreProductRequest;
 use App\Services\ProductService;
 use Illuminate\Http\JsonResponse;
 use App\Http\Requests;
+use App\Http\Requests\UpdateProductRequest;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
@@ -43,6 +44,21 @@ class ProductController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+    public function update($id, UpdateProductRequest $request)
+    {
+        $products = $this->productService->update($id, $request->validated());
+        return  response()->json([
+            'status' => 'success',
+            'data' => $products
+        ], 200);
+        try {
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'Lỗi khi cập nhật thông tin sản phẩm',
                 'message' => $e->getMessage()
             ], 500);
         }

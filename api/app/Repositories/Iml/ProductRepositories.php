@@ -5,15 +5,14 @@ namespace App\Repositories\Iml;
 use App\Repositories\Contracts\ProductRepositoriesInterface;
 use App\Models\products as Product;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Storage;
 
 class ProductRepositories implements ProductRepositoriesInterface
 {
-
     protected Product $product;
     protected const PER_PAGE = 30;
+    // Đây là thư mục trong storage/app/public/products
     protected const IMAGE_PATH = 'public/products';
 
     public function __construct(Product $product)
@@ -21,20 +20,14 @@ class ProductRepositories implements ProductRepositoriesInterface
         $this->product = $product;
     }
 
-    /**
-     * Lấy tất cả sản phẩm (collection, thường dùng cho admin hoặc export)
-     */
     public function all(int $page = 1, array $columns = ['*'])
     {
-
         return $this->product
             ->where('is_active', true)
             ->orderBy('created_at', 'desc')
             ->paginate(self::PER_PAGE, $columns, 'page', $page);
     }
-    /**
-     * Lấy danh sách sản phẩm có phân trang (frontend/admin list)
-     */
+
     public function paginate(int $page = 15, array $columns = ['*'])
     {
         return $this->product
@@ -43,20 +36,14 @@ class ProductRepositories implements ProductRepositoriesInterface
             ->paginate(self::PER_PAGE, $columns, 'page', $page);
     }
 
-    /**
-     * Tìm sản phẩm theo ID
-     */
     public function findById(int $id, array $columns = ['*'])
     {
         return $this->product
             ->select($columns)
-            ->where('is_active', true)
+            // ->where('is_active', true) // Tạm bỏ cái này để admin vẫn sửa được sp đang ẩn
             ->find($id);
     }
 
-    /**
-     * Tìm sản phẩm theo slug (dùng cho chi tiết sản phẩm)
-     */
     public function findBySlug(string $slug, array $columns = ['*'])
     {
         return $this->product
@@ -67,73 +54,69 @@ class ProductRepositories implements ProductRepositoriesInterface
     }
 
     /**
-     * Sync (đồng bộ) categories – xóa cũ, thêm mới (phổ biến nhất khi edit)
+     * Hàm xử lý upload ảnh (Dùng chung cho cả Create và Update)
      */
-    public function syncCategories(int $productId, array $categoryIds)
+    protected function handleUploadImage($file)
     {
-        $product = $this->product->findOrFail($productId);
-        $product->categories()->sync($categoryIds);
+        // 1. Lưu file vào storage/app/public/products
+        $path = $file->store(self::IMAGE_PATH);
+
+        // 2. Trả về đường dẫn để lưu DB (bỏ chữ public/ đi)
+        // Kết quả sẽ là: products/ten-anh.jpg
+        return str_replace('public/', '', $path);
     }
 
-    /**
-     * Tạo sản phẩm mới
-     */
     public function create(array $data): Product
     {
+        // Xử lý ảnh nếu có
         if (isset($data['image']) && $data['image'] instanceof UploadedFile) {
-            $path = Storage::putFile(self::IMAGE_PATH, $data['image']); // trả về path [web:120]
-            $data['thumbnail'] = str_replace('public/', '', $path);
+            $data['thumbnail'] = $this->handleUploadImage($data['image']);
         }
 
-        $categoryIds = $data['categoryIds'] ?? [];
+        // Loại bỏ các trường không có trong bảng products
+        // Lưu ý: Service đã lọc variants và category_ids rồi, ở đây lọc thêm image thôi
+        $payload = Arr::except($data, ['image', 'categoryIds', 'variants']);
 
-        $payload = Arr::except($data, ['image', 'categoryIds']);
-
-        $newProduct = $this->product->newQuery()->create($payload); // create trả model [web:38]
-
-        $this->syncCategories($newProduct->id, $categoryIds); // gọi repo method
+        $newProduct = $this->product->create($payload);
 
         return $newProduct;
     }
 
     /**
-     * Cập nhật sản phẩm theo ID
+     * Cập nhật sản phẩm
+     * (Phần này đã fix lỗi Undefined array key)
      */
     public function update(int $id, array $data)
     {
-        // Xử lý upload thumbnail
+        $product = $this->product->find($id);
+
+        if (!$product) return false;
+
+        // 1. Xử lý ảnh (Nếu người dùng có gửi ảnh mới lên)
         if (isset($data['image']) && $data['image'] instanceof UploadedFile) {
-            $uploadedFile = $data['image'];
-            $path = Storage::putFile(self::IMAGE_PATH, $uploadedFile);
+            // (Tùy chọn) Xóa ảnh cũ đi cho đỡ rác server
+            if ($product->thumbnail && Storage::exists('public/' . $product->thumbnail)) {
+                Storage::delete('public/' . $product->thumbnail);
+            }
 
-            $fileName = str_replace('public/', '', $path);
-
-            $data['thumbnail'] = $fileName;
-
-            $data = Arr::except($data, ['image']);
+            // Upload ảnh mới
+            $data['thumbnail'] = $this->handleUploadImage($data['image']);
         }
-        // Tạo sản phẩm
-        $product = $this->product->findOrFail($id);
 
-        $result =  $product->update($data);
-        // Đồng bộ lại categories
-        $this->product->syncCategories($id, $data['categoryId']);
+        // 2. Lọc bỏ dữ liệu thừa trước khi update
+        // Service đã lọc variants, category_ids. Ta lọc nốt 'image'
+        $updateData = Arr::except($data, ['image', 'variants', 'category_ids', 'categoryIds']);
 
-        return $result;
+        // 3. Thực hiện Update
+        return $product->update($updateData);
     }
 
-    /**
-     * Xóa sản phẩm theo ID (hard delete hoặc soft delete tùy model)
-     */
     public function delete(int $id)
     {
         $product = $this->product->findOrFail($id);
         return $product->delete();
     }
 
-    /**
-     * Lấy sản phẩm nổi bật (is_featured = true)
-     */
     public function getFeatured(int $limit = 10)
     {
         return $this->product
@@ -144,12 +127,8 @@ class ProductRepositories implements ProductRepositoriesInterface
             ->get();
     }
 
-    /**
-     * Tìm kiếm sản phẩm bằng fulltext (name + description)
-     */
     public function search(string $query, int $page)
     {
-
         return $this->product->newQuery()
             ->where('is_active', true)
             ->whereFullText(['name', 'description'], $query)
