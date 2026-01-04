@@ -107,4 +107,9 @@ class ProductService
             throw $e;
         }
     }
+
+    public function delete($id)
+    {
+        return $this->productRepository->delete($id);
+    }
 }

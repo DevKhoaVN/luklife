@@ -63,4 +63,20 @@ class ProductController extends Controller
             ], 500);
         }
     }
+
+    public function destroy($id)
+    {
+        try {
+            $this->productService->delete($id);
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Sản phẩm đã được xóa thành công'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
 }
