@@ -3,6 +3,7 @@
 namespace App\Repositories\Iml;
 use App\Repositories\Contracts\ProductRepositoriesInterface;
 use App\Models\products as Product;
+use App\Models\product_variants as ProductVartiant;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Storage;
@@ -12,12 +13,14 @@ class ProductRepositories implements ProductRepositoriesInterface
 {
 
     protected Product $product;
+    protected ProductVartiant $product_variant;
     protected const PER_PAGE = 30;
     protected const IMAGE_PATH = 'public/products';
 
-    public function __construct(Product $product)
+    public function __construct(Product $product,ProductVartiant $product_variant)
     {
         $this->product = $product;
+        $this->product_variant = $product_variant;
     }
 
     /**
@@ -72,22 +75,15 @@ class ProductRepositories implements ProductRepositoriesInterface
     /**
      * Tạo sản phẩm mới
      */
-    public function create(array $data): Product
+    public function create(array $data)
     {
         if (isset($data['image']) && $data['image'] instanceof UploadedFile) {
             $path = Storage::putFile(self::IMAGE_PATH, $data['image']); // trả về path [web:120]
             $data['thumbnail'] = str_replace('public/', '', $path);
         }
-
-        $categoryIds = $data['categoryIds'] ?? [];
-
-        $payload = Arr::except($data, ['image', 'categoryIds']);
-
-        $newProduct = $this->product->newQuery()->create($payload); // create trả model [web:38]
-
-        $this->syncCategories($newProduct->id, $categoryIds); // gọi repo method
-
-        return $newProduct;
+        
+        
+        return $this->product::create($data);
     }
 
     /**
@@ -121,7 +117,10 @@ class ProductRepositories implements ProductRepositoriesInterface
      */
     public function delete(int $id){
         $product = $this->product->findOrFail($id);
-        return $product->delete();
+
+        $product->update(['is_active' => false]);
+
+        return true;
     }
 
     /**
@@ -146,6 +145,10 @@ class ProductRepositories implements ProductRepositoriesInterface
             ->whereFullText(['name', 'description'], $query)
             ->orderBy('created_at', 'desc')
             ->paginate(self::PER_PAGE, ['*'], 'page', $page);
+    }
+
+    public function createProductVariant(array $data){
+      return $this->product_variant::create($data);
     }
 
 }

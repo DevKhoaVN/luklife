@@ -15,6 +15,8 @@ interface ProductRepositoriesInterface {
      */
     public function paginate(int $perPage = 15, array $columns = ['*']);
 
+    public function createProductVariant(array $data);
+
     /**
      * Tìm sản phẩm theo ID
      */
