@@ -3,39 +3,30 @@
 namespace App\Services;
 
 use Exception;
-use App\Models\categories as Category;
 use App\Repositories\Contracts\CategoriesRepositoriesInterface;
-use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
 
-
-class CategoriesService 
+class CategoriesService
 {
     protected CategoriesRepositoriesInterface $categoryRepo;
 
-    public function __construct(CategoriesRepositoriesInterface $categoryRepo) {
-      $this->categoryRepo = $categoryRepo;
+    public function __construct(CategoriesRepositoriesInterface $categoryRepo)
+    {
+        $this->categoryRepo = $categoryRepo;
     }
 
     public function getAllCategories()
     {
         try {
-
             $categories = $this->categoryRepo->paginate(20);
-       
-            if(empty($categories)){
-               throw new Exception('Không có dữ liệu danh mục trong hệ thống');
-             }
 
-             return [
-                'sccuess' => true,
-                'message' => "Lấy toàn bộ danh mục thành công",
-                'data' => $categories
-             ];;
-
-        }catch(Exception $e) {
             return [
-                'sccuess' => false,
+                'success' => true,
+                'message' => "Lấy danh sách danh mục thành công",
+                'data'    => $categories
+            ];
+        } catch (Exception $e) {
+            return [
+                'success' => false,
                 'message' => $e->getMessage()
             ];
         }
@@ -44,58 +35,37 @@ class CategoriesService
     public function store(array $data)
     {
         try {
-
-            if (!empty($data['image'])) {
-                $data['image'] = $data['image']->store('categories', 'public');
-            }
-
             $category = $this->categoryRepo->create($data);
 
             return [
-                'sccuess' => true,
+                'success' => true,
                 'message' => "Tạo danh mục thành công",
-                'data' => $category
-            ];;
+                'data'    => $category
+            ];
         } catch (Exception $e) {
             return [
-                'sccuess' => false,
-                'message' => $e->getMessage()
+                'success' => false,
+                'message' => "Lỗi tạo danh mục: " . $e->getMessage()
             ];
         }
-      
-
     }
 
-
-    public function update(array $data)
+    public function update(int $id, array $data)
     {
         try {
+            $status = $this->categoryRepo->update($id, $data);
 
-            $category = $this->categoryRepo->find($data['id']);
-
-            if(empty($category)){
-                throw new Exception("Danh mục không tồn tại trong hệ thống.");
+            if (!$status) {
+                throw new Exception("Không tìm thấy danh mục hoặc cập nhật thất bại.");
             }
 
-            if (isset($data['image']) && $data['image'] instanceof UploadedFile) {
-                    
-                if($category->image){
-                    Storage::disk('public')->delete($category->image);
-                }
-
-                $data['image'] = $data['image']->store('categories', 'public');
-            }
-
-            $this->categoryRepo->update($data['id'], $data);
-        
             return [
-                'sccuess' => true,
-                'message' => "Tạo danh mục thành công",
-                'data' => $category
+                'success' => true,
+                'message' => "Cập nhật danh mục thành công"
             ];
         } catch (Exception $e) {
             return [
-                'sccuess' => false,
+                'success' => false,
                 'message' => $e->getMessage()
             ];
         }
@@ -104,20 +74,34 @@ class CategoriesService
     public function delete(int $id)
     {
         try {
+            $status = $this->categoryRepo->delete($id);
 
-            $this->categoryRepo->delete($id);
+            if (!$status) {
+                throw new Exception("Không tìm thấy danh mục để xóa.");
+            }
 
             return [
-                'sccuess' => true,
+                'success' => true,
                 'message' => "Xóa danh mục thành công"
             ];
         } catch (Exception $e) {
             return [
-                'sccuess' => false,
+                'success' => false,
                 'message' => $e->getMessage()
             ];
         }
     }
 
-
+    public function getTree()
+    {
+        try {
+            $tree = $this->categoryRepo->getActiveRootsWithChildren();
+            return [
+                'success' => true,
+                'data'    => $tree
+            ];
+        } catch (Exception $e) {
+            return ['success' => false, 'message' => $e->getMessage()];
+        }
+    }
 }
