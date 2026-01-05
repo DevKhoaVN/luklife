@@ -8,6 +8,10 @@ import "swiper/css/pagination";
 
 import { Navigation, Pagination, Autoplay } from "swiper/modules";
 
+import HotProducts from "../features/product/components/HotProducts";
+import WhiteListProducts from "../features/product/components/WhiteListProducts";
+import OnlineExclusiveOffer from "../features/product/components/OnlineExclusiveOffer";
+
 export const Route = createFileRoute("/")({
   component: Index,
 });
@@ -29,7 +33,7 @@ function Index() {
   ];
   return (
     <>
-      <main className=" max-w-7xl mx-auto px-4 py-4">
+      <main className=" max-w-7xl mx-auto px-4 pb-4">
         {/* Banner */}
         <div className="h-full border-2xl w-full max-w-7xl mx-auto">
           {/* Swiper sẽ mở rộng theo chiều ngang của div cha (max-w-7xl nếu có) */}
@@ -72,7 +76,7 @@ function Index() {
             ))}
           </Swiper>
         </div>
-        <section className="mt-16">
+        <section className="my-16">
           <h2 className="title-primary text-xl uppercase  text-center font-bold mb-4">
             Nhận vochuer độc quyền online
           </h2>
@@ -83,35 +87,35 @@ function Index() {
           </div>
         </section>
 
-        <section>
-          <HotProductSection />
-        </section>
+        <WhiteListProducts />
+        <HotProducts />
+        <OnlineExclusiveOffer />
         <section className="my-16">
           <img
             src="https://tokyolife.vn/_next/image?url=https%3A%2F%2Fs3-hni02.higiocloud.vn%2Fgppm2%2Fprod%2Fcms%2F17624294258164892.png&w=3840&q=100"
             alt=""
           />
         </section>
-        <section>
-          <HotProductSection />
-        </section>
+
         <section className="my-16">
           <img
             src="https://tokyolife.vn/_next/image?url=https%3A%2F%2Fs3-hni02.higiocloud.vn%2Fgppm2%2Fprod%2Fcms%2F17625995251538528.png&w=3840&q=100"
             alt=""
           />
         </section>
-        <section>
-          <HotProductSection />
-        </section>
+
         <section className="my-16">
           <img
             src="https://tokyolife.vn/_next/image?url=https%3A%2F%2Fs3-hni02.higiocloud.vn%2Fgppm2%2Fprod%2Fcms%2F17611242928598404.png&w=3840&q=100"
             alt=""
           />
         </section>
+
         <section>
-          <HotProductSection />
+          <img
+            src="https://tokyolife.vn/_next/image?url=https%3A%2F%2Fs3-hni02.higiocloud.vn%2Fgppm2%2Fprod%2Fcms%2F17611062336535301.jpg&w=1920&q=100"
+            alt=""
+          />
         </section>
       </main>
     </>

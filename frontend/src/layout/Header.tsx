@@ -32,51 +32,8 @@ const MenuIcon = () => (
 // Dữ liệu menu với cấu trúc 3 cấp
 const MENU_CATEGORIES = [
   {
-    id: 1,
-    label: "🔥 Sale",
-    class: "text-red-600 font-semibold",
-    children: [
-      {
-        id: 11,
-        label: "Sale 50%",
-        children: [
-          { id: 111, label: "Áo thun" },
-          { id: 112, label: "Quần jean" },
-          { id: 113, label: "Giày dép" },
-        ],
-      },
-      {
-        id: 12,
-        label: "Flash Sale",
-        children: [
-          { id: 121, label: "Đồ mùa đông" },
-          { id: 122, label: "Phụ kiện" },
-        ],
-      },
-    ],
-  },
-  {
     id: 2,
     label: "Thời trang giữ ấm",
-    children: [
-      {
-        id: 21,
-        label: "Áo khoác",
-        children: [
-          { id: 211, label: "Áo khoác lông vũ" },
-          { id: 212, label: "Áo khoác dạ" },
-          { id: 213, label: "Áo khoác hoodie" },
-        ],
-      },
-      {
-        id: 22,
-        label: "Áo len",
-        children: [
-          { id: 221, label: "Áo len cổ lọ" },
-          { id: 222, label: "Áo len cardigan" },
-        ],
-      },
-    ],
   },
   {
     id: 3,

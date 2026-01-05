@@ -79,9 +79,17 @@ class ProductService
                 $query->where('name', 'LIKE', "%{$filters['search']}%");
             }
 
+            if (!empty($filters['type'])) {
+                match ($filters['type']) {
+                    'hot' => $query->where('is_featured', 1),
+                    'deal' => $query->where('discount_percentage', '>', 30),
+                    'whitelist', 'online' => null,  // No filter or customize
+                    default => null,
+                };
+            }
             // Lọc category
-            if (!empty($filters['category_slugs'])) {
-                $query->whereHas('categories', fn($q) => $q->whereIn('slug', $filters['category_slugs']));
+            if (!empty($filters['category'])) {
+                $query->whereHas('categories', fn($q) => $q->whereIn('slug', $filters['category']));
             }
 
             // Sort
@@ -114,7 +122,7 @@ class ProductService
             ]);
 
 
-            $result =  $query->paginate($filters['per_page'] ?? 15);
+            $result =  $query->paginate($filters['page'] ?? 15);
 
             return [
                 'sccuess' => true,

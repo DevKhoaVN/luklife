@@ -34,9 +34,9 @@ class ProductController extends Controller
     public function index(ProductIndexRequest $request){
         $filters = [
             'search'         => $request->getSearch(),
-            'category_slugs' => $request->getCategorySlugs(),
+            'category' => $request->getCategory(),
             'sort'           => $request->getSort(),
-            'per_page'       => $request->getPerPage(),
+            'per'       => $request->getPage(),
         ];
 
         $result = $this->productService->getProducts($filters);

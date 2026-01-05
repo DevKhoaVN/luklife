@@ -4,7 +4,7 @@ import ProductCard from "./ProductCard";
 import { ArrowRight } from "lucide-react";
 
 const TABS = [
-  { id: "combo", label: "COMBO TIẾT KIỆM" },
+  { id: "combo", label: "GIẢM GIÁ 50%" },
   { id: "online", label: "GIÁ ĐỘC QUYỀN ONLINE" },
   { id: "loved", label: "ĐƯỢC YÊU THÍCH NHẤT" },
 ];

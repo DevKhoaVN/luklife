@@ -11,7 +11,7 @@ export default function ProductCard({ product }) {
     <div className="group rounded-xl border border-slate-200 bg-white shadow-sm hover:shadow-md transition-shadow">
       <div className="aspect-[4/3] overflow-hidden rounded-t-xl bg-slate-50">
         <img
-          src={product.image}
+          src={product.Thu}
           alt={product.title}
           className="h-full w-full object-contain p-6 group-hover:scale-[1.02] transition-transform"
           loading="lazy"

@@ -23,10 +23,10 @@ class ProductIndexRequest extends FormRequest
     {
         return [
             'search'         => ['nullable', 'string', 'max:255'],
-            'category_slug'  => ['nullable', 'array'],
+            'category'  => ['nullable', 'array'],
             'category_slug.*' => ['string', 'exists:categories,slug'],
             'sort'           => ['nullable', 'string', 'in:price_desc,price_asc,name_asc,name_desc,newest,oldest'],
-            'per_page'       => ['nullable', 'integer', 'min:1', 'max:100'],
+            'page'       => ['nullable', 'integer', 'min:1', 'max:100'],
         ];
     }
 
@@ -36,9 +36,9 @@ class ProductIndexRequest extends FormRequest
         return $this->input('search');
     }
 
-    public function getCategorySlugs(): array
+    public function getCategory(): array
     {
-        return $this->input('category_slug', []);
+        return $this->input('category', []);
     }
 
     public function getSort(): string
@@ -46,8 +46,8 @@ class ProductIndexRequest extends FormRequest
         return $this->input('sort', 'newest'); // mặc định mới nhất
     }
 
-    public function getPerPage(): int
+    public function getPage(): int
     {
-        return $this->input('per_page', 15);
+        return $this->input('page', 15);
     }
 }
