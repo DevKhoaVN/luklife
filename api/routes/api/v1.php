@@ -27,10 +27,10 @@ Route::middleware('auth:api', 'can')->group(function () {
 });
 
 Route::prefix('category')->group(function () {
-    Route::post('index', [CategoriesController::class, 'index']);
-    Route::post('store', [CategoriesController::class, 'store']);
-    Route::post('update', [CategoriesController::class, 'update']);
-    Route::post('delete', [CategoriesController::class, 'destroy']);
+    Route::get('/', [CategoriesController::class, 'index']);
+    Route::post('/', [CategoriesController::class, 'store']);
+    Route::put('update/{id}', [CategoriesController::class, 'update']);
+    Route::delete('delete/{id}', [CategoriesController::class, 'destroy']);
 });
 Route::prefix('products')->group(function () {
     Route::get('index', [ProductController::class, 'index']);
