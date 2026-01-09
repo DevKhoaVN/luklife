@@ -4,6 +4,7 @@ use App\Http\Controllers\v1\Auth\AuthController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\v1\Admin\CategoriesController;
 use App\Http\Controllers\v1\Products\ProductController;
+use App\Http\Controllers\v1\Client\CartController;
 
 Route::prefix('auth')->group(function () {
     Route::post('register', [AuthController::class, 'register']);
@@ -37,4 +38,8 @@ Route::prefix('products')->group(function () {
     Route::post('store', [ProductController::class, 'store']);
     Route::put('update/{id}', [ProductController::class, 'update']);
     Route::delete('delete/{id}', [ProductController::class, 'destroy']);
+});
+
+Route::prefix('cart')->group(function () {
+    Route::post('/add', [CartController::class, 'addToCart']);
 });
