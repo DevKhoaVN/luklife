@@ -46,7 +46,7 @@ class Authorization
                 'message' => 'Invalid access token'
             ], 401);
         }
-
+      
         // attach user_id
         $request->attributes->set('user_id', $payload['sub']);
 

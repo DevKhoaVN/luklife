@@ -55,7 +55,7 @@ class ProductService
            
 
             return [
-                'sccuess' => true,
+                'success' => true,
                 'message' => "Thêm sản phẩm thành công",
                 'data' => $product
             ];
@@ -63,7 +63,7 @@ class ProductService
 
             DB::rollBack();
             return [
-                'sccuess' => false,
+                'success' => false,
                 'message' => $e->getMessage()
             ];
         }
@@ -125,7 +125,7 @@ class ProductService
             $result =  $query->paginate($filters['page'] ?? 15);
 
             return [
-                'sccuess' => true,
+                'success' => true,
                 'message' => "Tìm kiếm  sản phẩm thành công",
                 'data' => $result
             ];
@@ -133,7 +133,7 @@ class ProductService
         }catch(Exception $e) {
 
             return [
-                'sccuess' => false,
+                'success' => false,
                 'message' => $e->getMessage(),
             ];
         }
@@ -153,7 +153,7 @@ class ProductService
                 ->firstOrFail();
 
             return [
-                'sccuess' => true,
+                'success' => true,
                 'message' => "Tìm kiếm  sản phẩm thành công",
                 'data' => $result
             ];
@@ -161,7 +161,7 @@ class ProductService
         }catch(Exception $e)
         {
             return [
-                'sccuess' => false,
+                'success' => false,
                 'message' => $e->getMessage(),
             ];
         }

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
+use App\Models\cart as Cart;
 
 class users extends Authenticatable implements JWTSubject
 {
@@ -19,6 +20,10 @@ class users extends Authenticatable implements JWTSubject
     ];
 
     protected $hidden = ['password'];
+
+    public function cart(){
+        return $this->hasOne(Cart::class);
+    }
 
     public function getJWTIdentifier()
     {

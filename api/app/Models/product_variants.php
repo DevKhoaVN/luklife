@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Models\products as Product;
+
+use App\Models\cart_items as CartItem;
 class product_variants extends Model
 {
     //
@@ -23,4 +25,10 @@ class product_variants extends Model
     public function product(){
         return $this->belongsTo(Product::class);
     }
+
+    public function cartItems()
+    {
+        return $this->hasMany(CartItem::class, 'variant_id',);
+    }
+
 }
