@@ -25,7 +25,7 @@ return new class extends Migration
             $table->decimal('grand_total', 15, 2);
             $table->enum('order_status', ['pending', 'confirmed', 'processing', 'shipping', 'delivered', 'cancelled', 'returned'])->default('pending');
             $table->enum('payment_status', ['unpaid', 'pending', 'paid', 'failed', 'refunded'])->default('unpaid');
-            $table->enum('payment_method', ['cod', 'vnpay'])->default('cod');
+            $table->enum('payment_method', ['cod', 'vnpay', 'momo'])->default('cod');
             $table->text('notes')->nullable();
             $table->text('cancelled_reason')->nullable();
             $table->timestamps();

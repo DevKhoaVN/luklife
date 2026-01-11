@@ -8,16 +8,18 @@ use Illuminate\Support\Facades\DB;
 use App\Models\orders;
 use App\Models\order_items;
 use App\Services\VnpayService;
-use App\Http\Requests\CheckoutRequest; // 👈 Nhớ import file Request vừa tạo
+use App\Http\Requests\CheckoutRequest;
 use Exception;
+use App\Services\MomoService as momoService;
 
 class CheckoutController extends Controller
 {
     protected $vnpayService;
-
-    public function __construct(VnpayService $vnpayService)
+    protected $momoService;
+    public function __construct(VnpayService $vnpayService, momoService $momoService)
     {
         $this->vnpayService = $vnpayService;
+        $this->momoService = $momoService;
     }
 
     public function checkout(CheckoutRequest $request)
@@ -71,6 +73,19 @@ class CheckoutController extends Controller
                     'order_code' => $order->order_code
                 ]);
             }
+            if ($data['payment_method'] === 'momo') {
+                $paymentUrl = $this->momoService->createPayment([
+                    'order_code' => $order->order_code,
+                    'amount' => $order->grand_total
+                ]);
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Đơn hàng được tạo thành công. Hãy chuyển hướng đến Momo và thanh toán.',
+                    'payment_url' => $paymentUrl,
+                    'order_code' => $order->order_code
+                ]);
+            }
+
             return response()->json([
                 'success' => true,
                 'message' => 'Đặt hàng thành công.',
