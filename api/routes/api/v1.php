@@ -2,9 +2,10 @@
 
 use App\Http\Controllers\v1\Auth\AuthController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\v1\Admin\CategoriesController ;
+use App\Http\Controllers\v1\Admin\CategoriesController;
 use App\Http\Controllers\v1\Products\ProductController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\v1\Client\PaymentController;
 
 Route::prefix('auth')->group(function () {
     Route::post('register', [AuthController::class, 'register']);
@@ -45,9 +46,12 @@ Route::prefix('products')->group(function () {
 
 Route::prefix('cart')->group(function () {
 
-    Route::get('/', [CartController::class, 'getCart']); 
+    Route::get('/', [CartController::class, 'getCart']);
     Route::post('items', [CartController::class, 'addItem']);
     Route::put('items/{itemId}', [CartController::class, 'updateItem']);
     Route::delete('items/{itemId}', [CartController::class, 'deleteItem']);
     Route::delete('/', [CartController::class, 'clearCart']);
 });
+
+Route::post('/payment/vnpay', [PaymentController::class, 'createPaymentUrl']);
+Route::get('/payment/vnpay-return', [PaymentController::class, 'vnpayReturn']);
