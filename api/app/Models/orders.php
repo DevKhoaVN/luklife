@@ -34,4 +34,9 @@ class orders extends Model
         'total_amount' => 'decimal:2',
         'grand_total' => 'decimal:2',
     ];
+
+    public function items()
+    {
+        return $this->hasMany(order_items::class, 'order_id', 'id');
+    }
 }

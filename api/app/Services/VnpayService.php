@@ -11,21 +11,17 @@ class VnpayService
      */
     public function createPaymentUrl($data)
     {
-        // dd(config('vnpay.hash_secret'));
         // $data bao gồm: order_code, amount
-
         $vnp_TmnCode = config('vnpay.tmn_code');
         $vnp_HashSecret = config('vnpay.hash_secret');
         $vnp_Url = config('vnpay.url');
         $vnp_Returnurl = config('vnpay.return_url');
-
-        $vnp_TxnRef = $data['order_code']; // Mã đơn hàng
+        $vnp_TxnRef = $data['order_code'];
         $vnp_OrderInfo = "Thanh toan don hang " . $vnp_TxnRef;
         $vnp_OrderType = "billpayment";
         $vnp_Amount = $data['amount'] * 100;
         $vnp_Locale = 'vn';
         $vnp_IpAddr = request()->ip();
-
         $inputData = array(
             "vnp_Version" => "2.1.0",
             "vnp_TmnCode" => $vnp_TmnCode,
@@ -41,7 +37,6 @@ class VnpayService
             "vnp_TxnRef" => $vnp_TxnRef,
             "vnp_ExpireDate" => date('YmdHis', strtotime('+15 minutes')),
         );
-
         // Sắp xếp mảng theo thứ tự a-z (Bắt buộc)
         ksort($inputData);
         $query = "";
