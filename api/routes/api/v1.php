@@ -7,6 +7,7 @@ use App\Http\Controllers\v1\Products\ProductController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\v1\Client\PaymentController;
 use App\Http\Controllers\v1\Client\CheckoutController;
+use App\Http\Controllers\v1\Client\OrderController;
 
 Route::prefix('auth')->group(function () {
     Route::post('register', [AuthController::class, 'register']);
@@ -57,3 +58,8 @@ Route::prefix('cart')->group(function () {
 Route::post('/payment/vnpay', [PaymentController::class, 'createPaymentUrl']);
 Route::get('/payment/vnpay-return', [PaymentController::class, 'vnpayReturn']);
 Route::post('/checkout', [CheckoutController::class, 'checkout']);
+
+Route::prefix('orders')->group(function () {
+    Route::get('/', [OrderController::class, 'index']);
+    Route::get('/{order_code}', [OrderController::class, 'show']);
+});
