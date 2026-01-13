@@ -10,6 +10,7 @@ use App\Http\Controllers\v1\Client\CheckoutController;
 use App\Http\Controllers\v1\Client\OrderController as OrderController;
 use App\Http\Controllers\v1\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\v1\Admin\CouponController;
+use App\Http\Controllers\v1\Client\CouponController as ClientCouponController;
 
 Route::prefix('auth')->group(function () {
     Route::post('register', [AuthController::class, 'register']);
@@ -27,13 +28,15 @@ Route::prefix('admin')->group(function () {
     });
 
     Route::prefix('coupons')->group(function () {
-        Route::get('', [App\Http\Controllers\v1\Admin\CouponController::class, 'index']); // Xem danh sách
-        Route::post('', [App\Http\Controllers\v1\Admin\CouponController::class, 'store']); // Tạo mới
-        Route::delete('{id}', [App\Http\Controllers\v1\Admin\CouponController::class, 'destroy']); // Xóa
+        Route::get('', [CouponController::class, 'index']); // Xem danh sách
+        Route::post('', [CouponController::class, 'store']); // Tạo mới
+        Route::delete('{id}', [CouponController::class, 'destroy']); // Xóa
     });
 });
 
-
+Route::prefix('coupons')->group(function () {
+    Route::post('apply', [ClientCouponController::class, 'apply']);
+});
 
 Route::prefix('category')->group(function () {
     Route::post('index', [CategoriesController::class, 'index']);
