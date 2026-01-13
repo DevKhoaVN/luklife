@@ -7,7 +7,8 @@ use App\Http\Controllers\v1\Products\ProductController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\v1\Client\PaymentController;
 use App\Http\Controllers\v1\Client\CheckoutController;
-use App\Http\Controllers\v1\Client\OrderController;
+use App\Http\Controllers\v1\Client\OrderController as OrderController;
+use App\Http\Controllers\v1\Admin\OrderController as AdminOrderController;
 
 Route::prefix('auth')->group(function () {
     Route::post('register', [AuthController::class, 'register']);
@@ -15,6 +16,14 @@ Route::prefix('auth')->group(function () {
     Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
     Route::post('verify-otp', [AuthController::class, 'verifyOtp']);
     Route::post('reset-password', [AuthController::class, 'resetPassword']);
+});
+
+Route::prefix('admin')->group(function () {
+    Route::prefix('orders')->group(function () {
+        Route::get('', [AdminOrderController::class, 'index']); // Xem ds
+        Route::get('{id}', [AdminOrderController::class, 'show']); // Xem chi tiết
+        Route::put('{id}/status', [AdminOrderController::class, 'updateStatus']); // Cập nhật trạng thái
+    });
 });
 
 
