@@ -9,6 +9,7 @@ use App\Http\Controllers\v1\Client\PaymentController;
 use App\Http\Controllers\v1\Client\CheckoutController;
 use App\Http\Controllers\v1\Client\OrderController as OrderController;
 use App\Http\Controllers\v1\Admin\OrderController as AdminOrderController;
+use App\Http\Controllers\v1\Admin\CouponController;
 
 Route::prefix('auth')->group(function () {
     Route::post('register', [AuthController::class, 'register']);
@@ -24,20 +25,15 @@ Route::prefix('admin')->group(function () {
         Route::get('{id}', [AdminOrderController::class, 'show']); // Xem chi tiết
         Route::put('{id}/status', [AdminOrderController::class, 'updateStatus']); // Cập nhật trạng thái
     });
-});
 
-
-Route::middleware('auth:api', 'can')->group(function () {
-
-    // Auth protected
-    Route::prefix('auth')->group(function () {
-        Route::post('logout', [AuthController::class, 'logout']);
-        Route::post('refresh', [AuthController::class, 'refresh']);
-        Route::get('me', [AuthController::class, 'me']); // profile
+    Route::prefix('coupons')->group(function () {
+        Route::get('', [App\Http\Controllers\v1\Admin\CouponController::class, 'index']); // Xem danh sách
+        Route::post('', [App\Http\Controllers\v1\Admin\CouponController::class, 'store']); // Tạo mới
+        Route::delete('{id}', [App\Http\Controllers\v1\Admin\CouponController::class, 'destroy']); // Xóa
     });
-
-    // User routes
 });
+
+
 
 Route::prefix('category')->group(function () {
     Route::post('index', [CategoriesController::class, 'index']);
@@ -71,4 +67,16 @@ Route::post('/checkout', [CheckoutController::class, 'checkout']);
 Route::prefix('orders')->group(function () {
     Route::get('/', [OrderController::class, 'index']);
     Route::get('/{order_code}', [OrderController::class, 'show']);
+});
+
+Route::middleware('auth:api', 'can')->group(function () {
+
+    // Auth protected
+    Route::prefix('auth')->group(function () {
+        Route::post('logout', [AuthController::class, 'logout']);
+        Route::post('refresh', [AuthController::class, 'refresh']);
+        Route::get('me', [AuthController::class, 'me']); // profile
+    });
+
+    // User routes
 });
