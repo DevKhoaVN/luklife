@@ -5,11 +5,13 @@ namespace App\Models;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use App\Models\cart as Cart;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class users extends Authenticatable implements JWTSubject
 {
+    use HasFactory;
     protected $table = 'users';
-    
+
     protected $fillable = [
         'full_name',
         'phone',
@@ -21,7 +23,8 @@ class users extends Authenticatable implements JWTSubject
 
     protected $hidden = ['password'];
 
-    public function cart(){
+    public function cart()
+    {
         return $this->hasOne(Cart::class);
     }
 

@@ -4,9 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Models\product_variants as ProductVariant;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class cart_items extends Model
 {
+    use HasFactory;
     protected $fillable = [
         'id',
         'cart_id',

@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\products as Product;
 
 use App\Models\cart_items as CartItem;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class product_variants extends Model
 {
-    //
+    use HasFactory;
     protected $fillable = [
         'product_id',
         'sku',

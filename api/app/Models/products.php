@@ -7,14 +7,15 @@ use App\Models\categories as Category;
 use App\Models\product_variants as ProductVariant;
 use Spatie\Sluggable\HasSlug;
 use Spatie\Sluggable\SlugOptions;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class products extends Model
 {
-    use HasSlug;
+    use HasSlug, HasFactory;
 
     protected $table = 'products';
     //
-    protected $fillable = ['thumbnail', 'name','price', 'discount_percentage', 'slug', 'description', 'is_active', 'is_featured'];
+    protected $fillable = ['thumbnail', 'name', 'price', 'discount_percentage', 'slug', 'description', 'is_active', 'is_featured'];
 
 
     protected $casts = [
@@ -33,7 +34,8 @@ class products extends Model
             ->preventOverwrite();
     }
 
-    public function product_variants(){
+    public function product_variants()
+    {
         return $this->hasMany(ProductVariant::class, 'product_id');
     }
     // Many-to-many với Category
@@ -49,5 +51,4 @@ class products extends Model
 
         return round($this->price / (1 - $this->discount_percentage / 100), 0);
     }
-
 }
