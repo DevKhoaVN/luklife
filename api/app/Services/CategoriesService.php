@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use Exception;
-use App\Models\categories as Category;
+use App\Models\Category as Category;
 use App\Repositories\Contracts\CategoriesRepositoriesInterface;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -31,7 +31,7 @@ class CategoriesService
                 'sccuess' => true,
                 'message' => "Lấy toàn bộ danh mục thành công",
                 'data' => $categories
-             ];;
+             ];
 
         }catch(Exception $e) {
             return [

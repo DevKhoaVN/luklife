@@ -2,14 +2,14 @@
 
 namespace App\Repositories\Iml;
 
-use App\Models\token_blacklist as Token;
+use App\Models\TokenBlacklist;
 use App\Repositories\Contracts\TokenRepositoriesInterface;
 
 class TokenRepositories implements TokenRepositoriesInterface
 {
-    protected Token $token;
+    protected TokenBlacklist $token;
 
-    public function __construct(Token $token)
+    public function __construct(TokenBlacklist $token)
     {
         $this->token = $token;
     }

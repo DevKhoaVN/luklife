@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\v1\Admin\CategoriesController ;
 use App\Http\Controllers\v1\Products\ProductController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\v1\Auth\UserController;
 
 Route::prefix('auth')->group(function () {
     Route::post('register', [AuthController::class, 'register']);
@@ -45,9 +46,19 @@ Route::prefix('products')->group(function () {
 
 Route::prefix('cart')->group(function () {
 
-    Route::get('/', [CartController::class, 'getCart']); 
-    Route::post('items', [CartController::class, 'addItem']);
-    Route::put('items/{itemId}', [CartController::class, 'updateItem']);
-    Route::delete('items/{itemId}', [CartController::class, 'deleteItem']);
-    Route::delete('/', [CartController::class, 'clearCart']);
+    Route::post('/', [CartController::class, 'getCart']);
+    Route::post('items', [CartController::class, 'addToCart']);
+    Route::put('/', [CartController::class, 'updateQuantity']);
+    Route::post('delete', [CartController::class, 'deleteItemFromCart']);
+
+});
+Route::prefix('user')->group(function () {
+
+    Route::get('/profile', [UserController::class, 'getProfile']);
+    Route::put('/profile', [UserController::class, 'updateProfile']);
+    Route::post('/address', [UserController::class, 'getAddresses']);
+    Route::post('/address/create', [UserController::class, 'createAddress']);
+    Route::put('/address', [UserController::class, 'deleteItemFromCart']);
+    Route::post('/address/delete', [UserController::class, 'deleteItemFromCart']);
+    Route::put('/address/isDefault', [UserController::class, 'deleteItemFromCart']);
 });

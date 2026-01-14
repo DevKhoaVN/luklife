@@ -4,8 +4,9 @@ namespace App\Services;
 
 use App\Repositories\Contracts\ProductRepositoriesInterface;
 use App\Utils\CodeGenerator;
-use App\Models\products as Product;
-use App\Models\product_variants as ProductVariant;
+use App\Models\Product as Product;
+use App\Models\productVariant as ProductVariant;
+use App\Repositories\Contracts\CategoriesRepositoriesInterface;
 use Illuminate\Database\Eloquent\Builder;
 use  Illuminate\Support\Facades\DB;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -14,12 +15,8 @@ use Exception;
 class ProductService
 {
 
-    protected $productRepo;
+    public function __construct(protected ProductRepositoriesInterface $productRepo, protected CategoriesRepositoriesInterface $cateRepo){}
 
-    public function __construct(ProductRepositoriesInterface $productRepo)
-    {
-        $this->productRepo = $productRepo;
-    }
     public function createProduct(array $data)
     {
         DB::beginTransaction();
@@ -87,9 +84,36 @@ class ProductService
                     default => null,
                 };
             }
+
+            if (!empty($filters['priceMax'])) {
+                
+                $query->where('price', '<=', (float) $filters['priceMax']);
+            }
+
+            // Lọc MÀU SẮC (qua variant)
+            if (!empty($filters['color']) && strtolower(trim($filters['color'])) !== 'null') {
+        
+                $colorValue = trim($filters['color']);
+                $query->whereHas('productVariants', function ($q) use ($colorValue) {
+                    $q->whereRaw('LOWER(color) = ?', [strtolower($colorValue)]);
+                    $q->where('stock_quantity', '>', 0); // chỉ variant còn hàng
+                });
+            }
+
             // Lọc category
+            if (!empty($filters['child_category'])) {
+                $categoryFilter = (array) $filters['category'];
+                $query->whereHas('categories', fn($q) => $q->whereIn('slug',  $categoryFilter));
+            }
+
+            // Lọc CATEGORY + tất cả sub-category (đệ quy) - giữ nguyên code cũ của bạn
             if (!empty($filters['category'])) {
-                $query->whereHas('categories', fn($q) => $q->whereIn('slug', $filters['category']));
+                $categorySlugs = $filters['category'];
+                $allCategorySlugs = $this->cateRepo->findBySlug($categorySlugs);
+
+                $query->whereHas('categories', function ($q) use ($allCategorySlugs) {
+                    $q->whereIn('slug', $allCategorySlugs);
+                });
             }
 
             // Sort
@@ -140,12 +164,11 @@ class ProductService
     }
     public function getProductDetail(string $slug)
     {
-        
         try {
-            $result =  Product::with([
+            $result = Product::with([
                 'categories' => fn($q) => $q->select('categories.id', 'name', 'slug'),
-                'product_variants' => fn($q) => $q->where('is_active', true) // chỉ lấy variant active
-                    ->select('id','product_id', 'sku', 'color', 'size', 'sale_price', 'stock_quantity', 'image_url')
+                'productVariants' => fn($q) => $q->where('is_active', true)  // ← SỬA TÊN
+                    ->select('id', 'product_id', 'sku', 'color', 'size', 'sale_price', 'stock_quantity', 'image_url')
             ])
                 ->select('id', 'slug', 'name', 'thumbnail', 'price', 'discount_percentage', 'description', 'is_active')
                 ->where('slug', $slug)
@@ -154,17 +177,26 @@ class ProductService
 
             return [
                 'success' => true,
-                'message' => "Tìm kiếm  sản phẩm thành công",
+                'message' => "Tìm kiếm sản phẩm thành công",
                 'data' => $result
             ];
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return [
+                'success' => false,
+                'message' => "Không tìm thấy sản phẩm",
+            ];
+        } catch (\Exception $e) {
+           
 
-        }catch(Exception $e)
-        {
             return [
                 'success' => false,
                 'message' => $e->getMessage(),
             ];
         }
+    }
+
+    public function getProductByCategories(){
+
     }
 
     public function updateProduct(Product $product, array $data)
@@ -187,7 +219,7 @@ class ProductService
 
             DB::commit();
 
-            $result =  $product->load(['categories:id,name,slug', 'product_variants']);
+            $result =  $product->load(['categories:id,name,slug', 'productVariant']);
             return [
                 'sccuess' => false,
                 'message' => 'Cập nhật sản phẩm thành công',

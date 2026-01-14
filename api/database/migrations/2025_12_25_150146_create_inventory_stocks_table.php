@@ -12,9 +12,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('inventory_stocks', function (Blueprint $table) {
+        Schema::create('inventoryStocks', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('variant_id')->constrained('product_variants')->onDelete('cascade');
+            $table->foreignId('variant_id')->constrained('productVariant')->onDelete('cascade');
             $table->foreignId('warehouse_id')->constrained('warehouses')->onDelete('cascade');
             $table->integer('current_stock')->default(0);
             $table->integer('reserved_stock')->default(0);
@@ -24,7 +24,7 @@ return new class extends Migration
             $table->index('variant_id', 'idx_variant_id');
             $table->index('warehouse_id', 'idx_warehouse_id');
         });
-        DB::statement('ALTER TABLE inventory_stocks ADD COLUMN available_stock INT GENERATED ALWAYS AS (current_stock - reserved_stock) STORED');
+        DB::statement('ALTER TABLE inventoryStocks ADD COLUMN available_stock INT GENERATED ALWAYS AS (current_stock - reserved_stock) STORED');
     }
 
     /**
@@ -32,6 +32,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('inventory_stocks');
+        Schema::dropIfExists('inventoryStocks');
     }
 };

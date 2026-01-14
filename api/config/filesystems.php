@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'default' => env('FILESYSTEM_DISK', 'local'),
+    'default' => env('FILESYSTEM_DISK', 'cloudinary'),
 
     /*
     |--------------------------------------------------------------------------
@@ -60,6 +60,15 @@ return [
             'report' => false,
         ],
 
+        'cloudinary' => [
+            'driver' => 'cloudinary',
+            'key'    => env('CLOUDINARY_KEY'),          // Có thể để null nếu dùng CLOUDINARY_URL
+            'secret' => env('CLOUDINARY_SECRET'),
+            'cloud'  => env('CLOUDINARY_CLOUD_NAME'),
+            'url'    => env('CLOUDINARY_URL'),          // ← Quan trọng: dùng cái này
+            'secure' => (bool) env('CLOUDINARY_SECURE', true),
+            'prefix' => env('CLOUDINARY_PREFIX', ''),   // optional
+        ],
     ],
 
     /*

@@ -43,7 +43,7 @@ const DescriptionSection = ({
               <img
                 src={promoBanner}
                 alt="Banner"
-                className="w-full h-auto my-6 rounded-lg"
+                className="w-[50%]  mx-auto  my-6 rounded-lg"
               />
             )}
             <button

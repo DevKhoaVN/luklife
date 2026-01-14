@@ -2,8 +2,8 @@
 
 namespace App\Repositories\Iml;
 use App\Repositories\Contracts\ProductRepositoriesInterface;
-use App\Models\products as Product;
-use App\Models\product_variants as ProductVartiant;
+use App\Models\Product;
+use App\Models\ProductVariant;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Storage;
@@ -13,11 +13,11 @@ class ProductRepositories implements ProductRepositoriesInterface
 {
 
     protected Product $product;
-    protected ProductVartiant $product_variant;
+    protected ProductVariant $product_variant;
     protected const PER_PAGE = 30;
     protected const IMAGE_PATH = 'public/products';
 
-    public function __construct(Product $product,ProductVartiant $product_variant)
+    public function __construct(Product $product, ProductVariant $product_variant)
     {
         $this->product = $product;
         $this->product_variant = $product_variant;

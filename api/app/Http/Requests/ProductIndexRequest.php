@@ -23,10 +23,12 @@ class ProductIndexRequest extends FormRequest
     {
         return [
             'search'         => ['nullable', 'string', 'max:255'],
-            'category'  => ['nullable', 'array'],
-            'category_slug.*' => ['string', 'exists:categories,slug'],
+            'category'  => ['nullable', 'string'],
             'sort'           => ['nullable', 'string', 'in:price_desc,price_asc,name_asc,name_desc,newest,oldest'],
             'page'       => ['nullable', 'integer', 'min:1', 'max:100'],
+            'priceMax'  => ['nullable', 'integer', 'min:0', 'max:10000000'],
+            'child_category'  => ['nullable', 'string'],
+            'color'  => ['nullable', 'string'],
         ];
     }
 
@@ -36,9 +38,9 @@ class ProductIndexRequest extends FormRequest
         return $this->input('search');
     }
 
-    public function getCategory(): array
+    public function getCategory(): string
     {
-        return $this->input('category', []);
+        return $this->input('category', '');
     }
 
     public function getSort(): string
@@ -49,5 +51,17 @@ class ProductIndexRequest extends FormRequest
     public function getPage(): int
     {
         return $this->input('page', 15);
+    }
+    public function getPriceMax(): int
+    {
+        return $this->input('priceMax', 1499000);
+    }
+    public function getChildCategory()
+    {
+        return $this->input('child_category', null);
+    }
+    public function getColor()  
+    {
+        return $this->input('color', null);
     }
 }

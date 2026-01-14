@@ -3,13 +3,13 @@
 namespace App\Http\Controllers\v1\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\categories as Category;
+use App\Models\Category as Category;
 use App\Http\Requests\StoreCategoryRequest;
 use App\Http\Requests\UpdateCategoryRequest;
 use App\Services\CategoriesService;
 use Illuminate\Http\Request;
 
-class CategoriesController extends Controller
+class CategoriesController extends Controller   
 {
     protected CategoriesService $categoryService;
 

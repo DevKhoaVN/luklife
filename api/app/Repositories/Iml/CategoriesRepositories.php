@@ -2,7 +2,7 @@
 
 namespace App\Repositories\Iml;
 
-use App\Models\categories as Category;
+use App\Models\Category;
 use App\Repositories\Contracts\CategoriesRepositoriesInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
@@ -14,7 +14,7 @@ class CategoriesRepositories implements CategoriesRepositoriesInterface
         return Category::all();
     }
 
-    // app/Repositories/CategoryRepository.php
+    // app/Repositories/CategoriesRepository.php
 
     public function paginate(int $perPage = 15): LengthAwarePaginator
     {

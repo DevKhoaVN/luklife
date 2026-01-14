@@ -3,6 +3,8 @@ namespace App\Services;
 
 use App\Mail\ResetPasswordOtpMail;
 use App\Repositories\Contracts\AuthRepositoriesInterface;
+use App\Repositories\Contracts\UserRepositoriesInterface;
+use App\Repositories\Iml\UserRepository;
 use Illuminate\Http\Request;
 use Exception;
 use Illuminate\Support\Facades\Cache;
@@ -10,13 +12,13 @@ use Illuminate\Support\Facades\Mail;
 
 class AuthService
 {
-    protected UserService $userService;
+    protected UserRepositoriesInterface $userRepo;
     protected TokenService $tokenService;
 
-    public function __construct( UserService $userService, TokenService $tokenService)
+    public function __construct(UserRepositoriesInterface  $userRepo, TokenService $tokenService)
     {
         $this->tokenService = $tokenService;
-        $this->userService = $userService;
+        $this->userRepo = $userRepo;
     }
 
     /**
@@ -27,7 +29,8 @@ class AuthService
         try {
 
             // Tìm user theo email
-            $user = $this->userService->findUserByEmail($data['email']);
+            $user = $this->userRepo->findUserByEmail($data['email']);
+           
 
             if (!$user) {
                 throw new Exception('Email hoặc mật khẩu không đúng');
@@ -53,7 +56,13 @@ class AuthService
                 'user' => [
                     'id' => $user->id,
                     'email' => $user->email,
-                    'name' => $user->full_name ?? null,
+                    'full_name' => $user->full_name ?? null,
+                    'gender' => $user->gender ?? null,
+                    'date_of_birth' => $user->date_of_birth ?? null,
+                    'phone' => $user->phone ?? null,
+                    'avatar' => $user->avatar ?? null
+                    
+
                 ],
                 'token' => $token
             ];
@@ -72,7 +81,7 @@ class AuthService
     {
         try {
    
-            if ($this->userService->findUserByEmail($data['email'])) {
+            if ($this->userRepo->findUserByEmail($data['email'])) {
                 throw new Exception('Email đã được sử dụng');
             }
 
@@ -80,12 +89,15 @@ class AuthService
             $data['password'] = password_hash($data['password'], PASSWORD_BCRYPT, ['cost' => 12]);
 
             // Tạo user mới
-             $user = $this->userService->createUser(
+             $user = $this->userRepo->createUser(
                 ['email' => $data['email']],
                 [
                     'full_name' => $data['full_name'] ?? null,
                     'email' => $data['email'],
                     'password' => $data['password'],
+                    'gender' => $data['gender'],
+                    'phone' => $data['phone'],
+                    'date_of_birth' => $data['date_of_birth']
                 ]);
 
             if (!$user) {
@@ -123,7 +135,7 @@ class AuthService
                 throw new Exception('Email không hợp lệ.');
             }
             // check email account exits
-            $user = $this->userService->findUserByEmail($email);
+            $user = $this->userRepo->findUserByEmail($email);
             if(!$user){
                 throw new Exception('Email không tồn tại trong hệ thống.');
             }

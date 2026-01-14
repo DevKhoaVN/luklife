@@ -178,7 +178,7 @@ function Footer() {
           </div>
         </div>
       </footer>
-      <div className="bg-black w-full  h-16 sm:h-10 pt-4 px-2 sm:flex items-center justify-center gap-6">
+      <div className="bg-black w-full  h-16 sm:h-10 py-4 px-2 sm:flex items-center justify-center gap-6">
         <img
           src={luk_logo}
           alt="LUKLIFE Logo "

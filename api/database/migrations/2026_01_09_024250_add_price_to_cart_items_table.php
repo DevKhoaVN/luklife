@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('cart_items', function (Blueprint $table) {
+        Schema::table('cartItem', function (Blueprint $table) {
             //
             $table->decimal('price', 10, 2)->after('variant_id');
         });
@@ -22,7 +22,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('cart_items', function (Blueprint $table) {
+        Schema::table('cartItem', function (Blueprint $table) {
             //
         });
     }

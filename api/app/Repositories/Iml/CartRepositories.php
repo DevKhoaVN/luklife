@@ -2,11 +2,9 @@
 
 namespace App\Repositories\Iml;
 
-use App\Models\cart_items as CartItem;
-use App\Models\cart as Cart;
+use App\Models\CartItem;
+use App\Models\Cart;
 use App\Repositories\Contracts\CartRepositoriesInterface;
-use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
@@ -25,7 +23,7 @@ class CartRepositories implements CartRepositoriesInterface
 
         $cart->load([
             // Load CartItem
-            'items' => function (Builder $query) {
+            'items' => function ( $query) {
                 // Trong quan hệ CartItem, load tiếp Variant và Product
                 $query->with('variant.product');
             }
@@ -35,37 +33,21 @@ class CartRepositories implements CartRepositoriesInterface
     }
 
 
-    public function findGuestCart(string $sessionId): Cart
-    {
-        // 1. Tìm hoặc tạo mới Cart
-        $cart = Cart::firstOrCreate(
-            ['session_id' => $sessionId, 'user_id' => null]
-        );
 
-        // 2. Eager Load các mối quan hệ cần thiết, giống như findUserCart
-        $cart->load([
-            // Load CartItem
-            'items' => function (Builder $query) {
-                // Trong quan hệ CartItem, load tiếp Variant và Product
-                $query->with('variant.product');
-            }
-        ]);
-
-        return $cart;
-    }
-
-  
     public function saveItem(CartItem $item): CartItem
     {
         $item->save();
         return $item->fresh();
     }
 
-   
-
-    public function deleteCartItems(int $cartItemId):bool
+    public function deleteItemFromCart(int $cartId, $variantId): bool
     {
-        $deletedCount = CartItem::destroy($cartItemId);
+        // Tìm và xóa item dựa trên cả cart_id và variant_id
+        $deletedCount = CartItem::where('cart_id', $cartId)
+            ->where('variant_id', $variantId)
+            ->delete();
+
+        // Trả về true nếu có ít nhất 1 dòng bị xóa, ngược lại false
         return $deletedCount > 0;
     }
 
@@ -80,7 +62,7 @@ class CartRepositories implements CartRepositoriesInterface
     }
 
 
-    public function updateItemQuantity(int $cartId, int $variantId, int $quantity): bool
+    public function updateItemQuantity(int $cartId, int $variantId, int $quantity, int $price): bool
     {
         $cartItem = CartItem::where('cart_id', $cartId)
             ->where('variant_id', $variantId)
@@ -101,7 +83,8 @@ class CartRepositories implements CartRepositoriesInterface
 
         // 4. Cập nhật số lượng (quantity > 0)
         $cartItem->fill([
-            'quantity' => $quantity
+            'quantity' => $quantity,
+            'price' => $price
         ]);
 
         // Kiểm tra xem có thay đổi nào cần lưu không

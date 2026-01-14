@@ -2,11 +2,11 @@
 
 namespace App\Models;
 
-use App\Models\cart_items as CartItem;
-use App\Models\users as User;
+use App\Models\CartItem;
+use App\Models\Users;
 use Illuminate\Database\Eloquent\Model;
 
-class cart extends Model
+class Cart extends Model
 {
     //
     protected $fillable = [
@@ -19,6 +19,6 @@ class cart extends Model
         return $this->hasMany(CartItem::class );
     }
     public function user(){
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Users::class);
     }
 }

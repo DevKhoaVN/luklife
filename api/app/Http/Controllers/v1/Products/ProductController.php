@@ -7,7 +7,7 @@ use App\Http\Requests\LoginRequest;
 use App\Http\Requests\ProductIndexRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\StoreProductRequest;
-use App\Models\products as Product;
+use App\Models\Product as Product;
 use App\Services\AuthService;
 use App\Services\ProductService;
 use Illuminate\Http\Request;
@@ -37,6 +37,10 @@ class ProductController extends Controller
             'category' => $request->getCategory(),
             'sort'           => $request->getSort(),
             'per'       => $request->getPage(),
+            'color' => $request->getColor(),
+            'child_category' => $request->getChildCategory(),
+            'priceMax' =>  $request->getPriceMax(),
+
         ];
 
         $result = $this->productService->getProducts($filters);

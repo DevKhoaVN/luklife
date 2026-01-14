@@ -30,7 +30,7 @@ class StoreProductRequest extends FormRequest
             'is_active' => ['bool'],
             'is_featured' => ['bool'],
 
-            // Categories
+            // Category
             'category_ids' => ['required', 'array', 'min:1'],
             // 'category_ids.*' => ['integer', 'exists:categories,id'],
 

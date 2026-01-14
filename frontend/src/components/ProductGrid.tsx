@@ -1,4 +1,4 @@
-import ProductCard from "./ProductCard";
+import ProductCard from "../features/product/components/ProductCard";
 
 export default function ProductGrid({ products }) {
   return (

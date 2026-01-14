@@ -1,146 +1,177 @@
-import { useMemo, useState } from "react";
+import { useState, useEffect } from "react";
 
-/**
- * Component Section: Dùng để tạo các phần có thể mở/đóng (Accordion-like)
- * @param {string} title - Tiêu đề của phần
- * @param {boolean} open - Trạng thái mở/đóng
- * @param {function} onToggle - Hàm xử lý khi nhấn nút mở/đóng
- * @param {React.ReactNode} children - Nội dung bên trong phần
- */
+const HARDCODED_CATEGORIES = [
+  { id: 1, name: "Giày thời trang", slug: "giay-thoi-trang" },
+  { id: 2, name: "Dép bông", slug: "dep-bong" },
+  { id: 3, name: "Giày thể thao", slug: "giay-the-thao" },
+  { id: 4, name: "Giày nhựa", slug: "giay-nhua" },
+  { id: 5, name: "Dép xỏ ngón", slug: "dep-xo-ngon" },
+];
+
+const HARDCODED_COLORS = [
+  { name: "Trắng", hex: "#FFFFFF" },
+  { name: "Đen", hex: "#000000" },
+  { name: "Xanh lá", hex: "#008000" },
+  { name: "Vàng", hex: "#FFFF00" },
+  { name: "Hồng", hex: "#FFC0CB" },
+  { name: "Tím", hex: "#800080" },
+  { name: "Xám", hex: "#808080" },
+  { name: "Cam", hex: "#FFA500" },
+  { name: "Kem", hex: "#F5F5DC" },
+  { name: "Xanh dương", hex: "#0000FF" },
+  { name: "Nâu", hex: "#8B4513" },
+];
+
 function Section({ title, open, onToggle, children }) {
   return (
-    <div className="border-b border-slate-200 py-4">
+    <div className="border-b border-gray-200 py-4">
       <button
         type="button"
         onClick={onToggle}
-        className="flex w-full items-center justify-between text-left"
+        className="flex w-full items-center justify-between text-left group"
       >
-        {/* Tiêu đề */}
-        <span className="text-sm font-semibold text-slate-900">{title}</span>
-        {/* Biểu tượng mở/đóng */}
-        <span className="text-slate-500">{open ? "–" : "+"}</span>
+        <span className="text-md font-bold text-gray-900">{title}</span>
+        <span className="text-gray-900 text-xl font-light">
+          {open ? "−" : "+"}
+        </span>
       </button>
-
-      {/* Hiển thị nội dung nếu 'open' là true */}
-      {open ? <div className="mt-4">{children}</div> : null}
+      {open && <div className="mt-4">{children}</div>}
     </div>
   );
 }
 
-/**
- * Component FiltersSidebar: Sidebar lọc sản phẩm chính
- */
-export default function FiltersSidebar() {
-  // 1. State quản lý khoảng giá
-  const [priceMin, setPriceMin] = useState(0); // Giá trị thấp nhất
-  const [priceMax, setPriceMax] = useState(1199000); // Giá trị cao nhất/Max của thanh trượt
+export default function FiltersSidebar({ onFilterChange }) {
+  const DEFAULT_PRICE = 1499000;
+  const [priceMax, setPriceMax] = useState(DEFAULT_PRICE);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedColor, setSelectedColor] = useState(null);
 
-  // 2. State quản lý trạng thái mở/đóng của các Section
-  const [openColor, setOpenColor] = useState(false);
+  const [openColor, setOpenColor] = useState(true);
   const [openCategory, setOpenCategory] = useState(true);
 
-  // 3. useMemo: Tính toán chuỗi hiển thị khoảng giá (ví dụ: 0 - 1.199.000)
-  const display = useMemo(() => {
-    // Hàm format số theo định dạng tiền tệ Việt Nam
-    const fmt = (n) => new Intl.NumberFormat("vi-VN").format(n);
-    return `${fmt(priceMin)} - ${fmt(priceMax)}`;
-  }, [priceMin, priceMax]); // Phụ thuộc vào priceMin và priceMax
+  // Chỉ gửi filter lên khi các giá trị thực sự thay đổi
+  // Riêng priceMax sẽ được xử lý qua onMouseUp để tránh gọi API quá nhiều
+  useEffect(() => {
+    onFilterChange?.({
+      priceMax,
+      category: selectedCategory,
+      color: selectedColor,
+    });
+  }, [selectedCategory, selectedColor]); // Bỏ priceMax khỏi đây nếu dùng onMouseUp
+
+  const handleReset = () => {
+    setPriceMax(DEFAULT_PRICE);
+    setSelectedCategory(null);
+    setSelectedColor(null);
+    onFilterChange?.({ priceMax: DEFAULT_PRICE, category: null, color: null });
+  };
+
+  const hasFilter =
+    priceMax !== DEFAULT_PRICE ||
+    selectedCategory !== null ||
+    selectedColor !== null;
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4">
-      {/* -------------------- PHẦN LỌC GIÁ -------------------- */}
-      <div className="pb-4">
-        <div className="text-[16px] font-semibold text-black">
-          Sắp xếp khoảng giá
-        </div>
-
-        <div className="mt-4 space-y-3">
-          {/* Thanh trượt Range Input */}
+    <aside className="w-full pr-4">
+      <div className="pb-6 mb-2 border-b border-gray-200">
+        <h2 className="text-md font-bold text-gray-900 mb-6">Khoảng giá</h2>
+        <div className="space-y-4 px-1">
           <input
             type="range"
             min={0}
-            max={1199000}
-            // Mặc định, thanh trượt 1 chiều nên value thường là giá trị Max (priceMax)
-            value={priceMin}
-            // LƯU Ý LOGIC: Thanh trượt 1 chiều này đang cập nhật MIN (setPriceMin)
-            // Nếu bạn muốn nó điều khiển giá trị MAX, hãy đổi thành setPriceMax
-            onChange={(e) => setPriceMin(Number(e.target.value))}
-            // Class custom, sử dụng màu đỏ (#C92127) cho thanh trượt
-            className="w-full title-primary accent-[#C92127]"
+            max={DEFAULT_PRICE}
+            value={priceMax}
+            onChange={(e) => setPriceMax(Number(e.target.value))}
+            // Chỉ gọi API khi người dùng dừng kéo
+            onMouseUp={() =>
+              onFilterChange?.({
+                priceMax,
+                category: selectedCategory,
+                color: selectedColor,
+              })
+            }
+            className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-red-600"
+            style={{
+              background: `linear-gradient(to right, #e11d48 0%, #e11d48 ${(priceMax / DEFAULT_PRICE) * 100}%, #f3f4f6 ${(priceMax / DEFAULT_PRICE) * 100}%, #f3f4f6 100%)`,
+            }}
           />
-
-          {/* Hiển thị giá trị Min và Max */}
-          <div className="flex items-center justify-between text-xs text-slate-600">
-            {/* Hiển thị giá trị Min (đã được cập nhật từ thanh trượt) */}
-            <span className="text-sm font-light">{priceMin}</span>
-            {/* Hiển thị giá trị Max (cố định: 1199000) */}
-            <span className="text-sm font-light">{priceMax}</span>
+          <div className="flex justify-between text-sm font-medium text-gray-700">
+            <span>0đ</span>
+            <span>{priceMax.toLocaleString()}đ</span>
           </div>
         </div>
       </div>
 
-      {/* -------------------- PHẦN LỌC MÀU SẮC -------------------- */}
       <Section
         title="Màu sắc"
         open={openColor}
-        onToggle={() => setOpenColor((v) => !v)}
+        onToggle={() => setOpenColor(!openColor)}
       >
-        <div className="grid grid-cols-6 gap-2">
-          {[
-            "#111827", // Đen
-            "#ffffff", // Trắng
-            "#ef4444", // Đỏ (Red-500)
-            "#22c55e", // Xanh lá (Green-500)
-            "#3b82f6", // Xanh dương (Blue-500)
-            "#f59e0b", // Vàng/Cam (Amber-500)
-          ].map((c) => (
+        <div className="grid grid-cols-6 gap-3">
+          {HARDCODED_COLORS.map((color) => (
             <button
-              key={c}
+              key={color.name}
               type="button"
-              className="h-7 w-7 rounded-full border border-slate-200 shadow-sm"
-              style={{ background: c }}
-              title={c}
+              onClick={() =>
+                setSelectedColor(
+                  selectedColor === color.name ? null : color.name
+                )
+              }
+              className={`relative w-7 h-7 rounded-full border border-gray-200 transition-all ${
+                selectedColor === color.name
+                  ? "ring-2 ring-offset-2 ring-red-500 scale-110"
+                  : "hover:scale-110"
+              }`}
+              style={{ backgroundColor: color.hex }}
             />
           ))}
         </div>
       </Section>
 
-      {/* -------------------- PHẦN LỌC DANH MỤC -------------------- */}
       <Section
         title="Danh mục"
         open={openCategory}
-        onToggle={() => setOpenCategory((v) => !v)}
+        onToggle={() => setOpenCategory(!openCategory)}
       >
-        <div className="space-y-3 text-sm text-slate-700">
-          {[
-            "Giày thể thao",
-            "Dép bông",
-            "Dép xỏ ngón",
-            "Giày nhựa",
-            "Dép nhựa",
-          ].map((label) => (
-            <label key={label} className="flex items-center gap-3">
+        <div className="space-y-4">
+          {HARDCODED_CATEGORIES.map((cat) => (
+            <label
+              key={cat.slug}
+              className="flex items-center gap-3 cursor-pointer group"
+            >
               <input
-                type="checkbox"
-                // accent-rose-600: Đổi màu của checkbox thành hồng/đỏ
-                className="h-4 w-4 rounded border-slate-300 accent-rose-600"
+                type="radio"
+                checked={selectedCategory === cat.slug}
+                // Hỗ trợ click lần 2 để bỏ chọn
+                onClick={() =>
+                  setSelectedCategory(
+                    selectedCategory === cat.slug ? null : cat.slug
+                  )
+                }
+                onChange={() => {}}
+                className="h-4 w-4 cursor-pointer accent-red-500"
               />
-              <span>{label}</span>
+              <span
+                className={`text-[14px] transition-all ${selectedCategory === cat.slug ? "text-black font-bold" : "text-gray-700 group-hover:text-black"}`}
+              >
+                {cat.name}
+              </span>
             </label>
           ))}
         </div>
       </Section>
 
-      {/* -------------------- NÚT ÁP DỤNG -------------------- */}
-      <div className="pt-4">
-        <button
-          type="button"
-          className="w-full rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800"
-          // Ở đây bạn sẽ thêm hàm onClick để xử lý lọc dữ liệu
-        >
-          Áp dụng
-        </button>
-      </div>
-    </div>
+      {hasFilter && (
+        <div className="mt-8">
+          <button
+            onClick={handleReset}
+            className="w-full py-2 px-4 border border-red-600 text-red-600 text-sm font-semibold rounded-md hover:bg-red-50 transition-colors flex items-center justify-center gap-2"
+          >
+            {/* Icon reset... */}
+            Thiết lập lại
+          </button>
+        </div>
+      )}
+    </aside>
   );
 }

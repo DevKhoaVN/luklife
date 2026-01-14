@@ -10,13 +10,33 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ProfileIndexRouteImport } from './routes/profile/index'
+import { Route as CheckoutIndexRouteImport } from './routes/checkout/index'
+import { Route as CartIndexRouteImport } from './routes/cart/index'
 import { Route as SanPhamSlugRouteImport } from './routes/san-pham/$slug'
-import { Route as LandingPageSlugRouteImport } from './routes/landing-page/$slug'
 import { Route as DanhMucSanPhamSlugRouteImport } from './routes/danh-muc-san-pham/$slug'
+import { Route as AuthRegisterRouteImport } from './routes/auth/register'
+import { Route as AuthLoginRouteImport } from './routes/auth/login'
+import { Route as AuthForgotPasswordRouteImport } from './routes/auth/forgot-password'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileIndexRoute = ProfileIndexRouteImport.update({
+  id: '/profile/',
+  path: '/profile/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CheckoutIndexRoute = CheckoutIndexRouteImport.update({
+  id: '/checkout/',
+  path: '/checkout/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CartIndexRoute = CartIndexRouteImport.update({
+  id: '/cart/',
+  path: '/cart/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SanPhamSlugRoute = SanPhamSlugRouteImport.update({
@@ -24,62 +44,107 @@ const SanPhamSlugRoute = SanPhamSlugRouteImport.update({
   path: '/san-pham/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
-const LandingPageSlugRoute = LandingPageSlugRouteImport.update({
-  id: '/landing-page/$slug',
-  path: '/landing-page/$slug',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const DanhMucSanPhamSlugRoute = DanhMucSanPhamSlugRouteImport.update({
   id: '/danh-muc-san-pham/$slug',
   path: '/danh-muc-san-pham/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthRegisterRoute = AuthRegisterRouteImport.update({
+  id: '/auth/register',
+  path: '/auth/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthLoginRoute = AuthLoginRouteImport.update({
+  id: '/auth/login',
+  path: '/auth/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
+  id: '/auth/forgot-password',
+  path: '/auth/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth/forgot-password': typeof AuthForgotPasswordRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/auth/register': typeof AuthRegisterRoute
   '/danh-muc-san-pham/$slug': typeof DanhMucSanPhamSlugRoute
-  '/landing-page/$slug': typeof LandingPageSlugRoute
   '/san-pham/$slug': typeof SanPhamSlugRoute
+  '/cart': typeof CartIndexRoute
+  '/checkout': typeof CheckoutIndexRoute
+  '/profile': typeof ProfileIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth/forgot-password': typeof AuthForgotPasswordRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/auth/register': typeof AuthRegisterRoute
   '/danh-muc-san-pham/$slug': typeof DanhMucSanPhamSlugRoute
-  '/landing-page/$slug': typeof LandingPageSlugRoute
   '/san-pham/$slug': typeof SanPhamSlugRoute
+  '/cart': typeof CartIndexRoute
+  '/checkout': typeof CheckoutIndexRoute
+  '/profile': typeof ProfileIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/auth/forgot-password': typeof AuthForgotPasswordRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/auth/register': typeof AuthRegisterRoute
   '/danh-muc-san-pham/$slug': typeof DanhMucSanPhamSlugRoute
-  '/landing-page/$slug': typeof LandingPageSlugRoute
   '/san-pham/$slug': typeof SanPhamSlugRoute
+  '/cart/': typeof CartIndexRoute
+  '/checkout/': typeof CheckoutIndexRoute
+  '/profile/': typeof ProfileIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/auth/forgot-password'
+    | '/auth/login'
+    | '/auth/register'
     | '/danh-muc-san-pham/$slug'
-    | '/landing-page/$slug'
     | '/san-pham/$slug'
+    | '/cart'
+    | '/checkout'
+    | '/profile'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/auth/forgot-password'
+    | '/auth/login'
+    | '/auth/register'
     | '/danh-muc-san-pham/$slug'
-    | '/landing-page/$slug'
     | '/san-pham/$slug'
+    | '/cart'
+    | '/checkout'
+    | '/profile'
   id:
     | '__root__'
     | '/'
+    | '/auth/forgot-password'
+    | '/auth/login'
+    | '/auth/register'
     | '/danh-muc-san-pham/$slug'
-    | '/landing-page/$slug'
     | '/san-pham/$slug'
+    | '/cart/'
+    | '/checkout/'
+    | '/profile/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthForgotPasswordRoute: typeof AuthForgotPasswordRoute
+  AuthLoginRoute: typeof AuthLoginRoute
+  AuthRegisterRoute: typeof AuthRegisterRoute
   DanhMucSanPhamSlugRoute: typeof DanhMucSanPhamSlugRoute
-  LandingPageSlugRoute: typeof LandingPageSlugRoute
   SanPhamSlugRoute: typeof SanPhamSlugRoute
+  CartIndexRoute: typeof CartIndexRoute
+  CheckoutIndexRoute: typeof CheckoutIndexRoute
+  ProfileIndexRoute: typeof ProfileIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -91,18 +156,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/profile/': {
+      id: '/profile/'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/checkout/': {
+      id: '/checkout/'
+      path: '/checkout'
+      fullPath: '/checkout'
+      preLoaderRoute: typeof CheckoutIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cart/': {
+      id: '/cart/'
+      path: '/cart'
+      fullPath: '/cart'
+      preLoaderRoute: typeof CartIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/san-pham/$slug': {
       id: '/san-pham/$slug'
       path: '/san-pham/$slug'
       fullPath: '/san-pham/$slug'
       preLoaderRoute: typeof SanPhamSlugRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/landing-page/$slug': {
-      id: '/landing-page/$slug'
-      path: '/landing-page/$slug'
-      fullPath: '/landing-page/$slug'
-      preLoaderRoute: typeof LandingPageSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/danh-muc-san-pham/$slug': {
@@ -112,14 +191,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DanhMucSanPhamSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth/register': {
+      id: '/auth/register'
+      path: '/auth/register'
+      fullPath: '/auth/register'
+      preLoaderRoute: typeof AuthRegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/login': {
+      id: '/auth/login'
+      path: '/auth/login'
+      fullPath: '/auth/login'
+      preLoaderRoute: typeof AuthLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/forgot-password': {
+      id: '/auth/forgot-password'
+      path: '/auth/forgot-password'
+      fullPath: '/auth/forgot-password'
+      preLoaderRoute: typeof AuthForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthForgotPasswordRoute: AuthForgotPasswordRoute,
+  AuthLoginRoute: AuthLoginRoute,
+  AuthRegisterRoute: AuthRegisterRoute,
   DanhMucSanPhamSlugRoute: DanhMucSanPhamSlugRoute,
-  LandingPageSlugRoute: LandingPageSlugRoute,
   SanPhamSlugRoute: SanPhamSlugRoute,
+  CartIndexRoute: CartIndexRoute,
+  CheckoutIndexRoute: CheckoutIndexRoute,
+  ProfileIndexRoute: ProfileIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

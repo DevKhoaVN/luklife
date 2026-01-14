@@ -1,5 +1,3 @@
-import Footer from "./layout/Footer.tsx";
-import Header from "./layout/Header.tsx";
 import CardVochuer from "./components/CardVochuer.tsx";
 import HotProductSection from "./components/HotProductSection.tsx";
 function App() {

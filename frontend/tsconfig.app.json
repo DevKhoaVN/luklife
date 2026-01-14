@@ -20,9 +20,9 @@
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "erasableSyntaxOnly": true,
+    "erasableSyntaxOnly": false,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["src", "src/App.tsx", "src/main.tsx"]
+  "include": ["src", "src/App.tsx", "src/main.tsx", "src/context/AppContext.tsx"]
 }

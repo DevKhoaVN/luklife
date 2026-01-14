@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import CardVochuer from "../components/CardVochuer";
-import HotProductSection from "../components/HotProductSection";
+
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/navigation";
@@ -11,6 +11,7 @@ import { Navigation, Pagination, Autoplay } from "swiper/modules";
 import HotProducts from "../features/product/components/HotProducts";
 import WhiteListProducts from "../features/product/components/WhiteListProducts";
 import OnlineExclusiveOffer from "../features/product/components/OnlineExclusiveOffer";
+import { brandDescription, commitments } from "../constant";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -117,7 +118,66 @@ function Index() {
             alt=""
           />
         </section>
+        <section>
+          {/* Phần 4 cột Cam kết */}
+          <div className="max-w-7xl mx-auto py-10 px-4 my-16 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 text-center">
+              {commitments.map((item, index) => (
+                <div
+                  key={index}
+                  className="bg-white p-6 border border-gray-100 rounded-lg shadow-sm flex flex-col items-center"
+                >
+                  <div className="h-14 w-14 mb-4 flex items-center justify-center rounded-full bg-red-600 text-white">
+                    <item.icon className="h-6 w-6" />
+                  </div>
+                  <h3 className="text-base font-bold text-gray-800 mb-2">
+                    {item.title}
+                  </h3>
+                  <p className="text-sm text-gray-600">{item.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
       </main>
+      <section>
+        {/* Phần Banner Đỏ - Cam kết trách nhiệm xã hội */}
+        <div className="bg-red-800 w-full text-white py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+          <div className="max-w-5xl mx-auto text-center">
+            {/* Logo giữa */}
+            <h2 className="text-4xl font-serif font-extrabold mb-4 tracking-wider">
+              LUKLIFE
+            </h2>
+
+            {/* Trích dẫn lớn (Gần như trong ảnh) */}
+            <div className="relative">
+              <blockquote className="text-base leading-relaxed italic px-8">
+                <p className="mb-4 font-semibold">
+                  Tokyolife trân trọng cám ơn Quý Khách đã ủng hộ và góp phần
+                  tạo thêm cơ hội việc làm cho{" "}
+                  <span className="text-yellow-300">142 người khuyết tật.</span>
+                </p>
+                <p className="text-sm font-light leading-relaxed">
+                  {brandDescription}
+                </p>
+              </blockquote>
+
+              {/* Icon trích dẫn lớn, mờ (Giả định) */}
+              <span className="absolute left-0 top-0 text-white/10 text-[100px] leading-none transform -translate-x-1/2 -translate-y-1/2">
+                “
+              </span>
+              <span className="absolute right-0 bottom-0 text-white/10 text-[100px] leading-none transform translate-x-1/2 translate-y-1/2">
+                ”
+              </span>
+            </div>
+
+            {/* Placeholder cho sticker/voucher (Tùy chọn) */}
+            <div className="absolute left-0 top-1/2 transform -translate-y-1/2">
+              {/* Đây là vị trí của voucher sticker 200K trong ảnh */}
+            </div>
+          </div>
+        </div>
+      </section>
     </>
   );
 }

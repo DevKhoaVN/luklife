@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import logo from "../../public/assets/header_logo.svg";
 
 import {
@@ -11,6 +11,10 @@ import {
   LogIn,
   UserPlus,
 } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { MENU_CATEGORIES, slidesData } from "../constant";
+import AppContext from "../context/AppContext";
+import { useGetCart } from "../hooks/useCart";
 
 const MenuIcon = () => (
   <svg
@@ -28,118 +32,6 @@ const MenuIcon = () => (
     />
   </svg>
 );
-
-// Dữ liệu menu với cấu trúc 3 cấp
-const MENU_CATEGORIES = [
-  {
-    id: 2,
-    label: "Thời trang giữ ấm",
-  },
-  {
-    id: 3,
-    label: "Nữ",
-    children: [
-      {
-        id: 31,
-        label: "Áo",
-        children: [
-          { id: 311, label: "Áo thun" },
-          { id: 312, label: "Áo sơ mi" },
-          { id: 313, label: "Áo kiểu" },
-        ],
-      },
-      {
-        id: 32,
-        label: "Quần",
-        children: [
-          { id: 321, label: "Quần jean" },
-          { id: 322, label: "Quần tây" },
-          { id: 323, label: "Quần short" },
-        ],
-      },
-      {
-        id: 33,
-        label: "Váy",
-        children: [
-          { id: 331, label: "Váy ngắn" },
-          { id: 332, label: "Váy midi" },
-          { id: 333, label: "Váy maxi" },
-        ],
-      },
-      {
-        id: 31,
-        label: "Áo",
-        children: [
-          { id: 311, label: "Áo thun" },
-          { id: 312, label: "Áo sơ mi" },
-          { id: 313, label: "Áo kiểu" },
-        ],
-      },
-      {
-        id: 31,
-        label: "Áo",
-        children: [
-          { id: 311, label: "Áo thun" },
-          { id: 312, label: "Áo sơ mi" },
-          { id: 313, label: "Áo kiểu" },
-        ],
-      },
-    ],
-  },
-  {
-    id: 4,
-    label: "Nam",
-    children: [
-      {
-        id: 41,
-        label: "Áo",
-        children: [
-          { id: 411, label: "Áo thun" },
-          { id: 412, label: "Áo sơ mi" },
-          { id: 413, label: "Áo polo" },
-        ],
-      },
-      {
-        id: 42,
-        label: "Quần",
-        children: [
-          { id: 421, label: "Quần jean" },
-          { id: 422, label: "Quần kaki" },
-          { id: 423, label: "Quần short" },
-        ],
-      },
-    ],
-  },
-  {
-    id: 5,
-    label: "Trẻ em",
-    children: [
-      {
-        id: 51,
-        label: "Bé gái",
-        children: [
-          { id: 511, label: "Áo bé gái" },
-          { id: 512, label: "Váy bé gái" },
-          { id: 513, label: "Quần bé gái" },
-        ],
-      },
-      {
-        id: 52,
-        label: "Bé trai",
-        children: [
-          { id: 521, label: "Áo bé trai" },
-          { id: 522, label: "Quần bé trai" },
-        ],
-      },
-    ],
-  },
-  { id: 6, label: "Giày dép" },
-  { id: 7, label: "Phụ kiện" },
-  { id: 8, label: "Mỹ phẩm" },
-  { id: 9, label: "Nhà cửa - Đời sống" },
-  { id: 10, label: "Voucher" },
-  { id: 11, label: "Tin tức" },
-];
 
 // Component cho từng item menu
 const MenuItem = ({ item, level = 1, onClose }) => {
@@ -202,28 +94,22 @@ const MenuItem = ({ item, level = 1, onClose }) => {
 };
 
 export default function Header() {
+  const { user, setCartItems, cartItems } = useContext(AppContext);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false); // Trạng thái đăng nhập
   const [hoveredCategory, setHoveredCategory] = useState(null);
+  const { data: cartData, isLoading } = useGetCart(user?.id);
+
+  const cartQuantity = cartData?.data?.items?.length || 0;
+
+  useEffect(() => {
+    if (cartData) setCartItems(cartData?.data);
+  }, [cartData]);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
-  // Dữ liệu mẫu
-  const slidesData = [
-    {
-      id: 1,
-      image_url:
-        "https://s3-hni02.higiocloud.vn/gppm2/prod/cms/17667138083114784.jpg",
-      alt: "Banner Thời trang Hè 2024",
-    },
-    {
-      id: 2,
-      image_url:
-        "https://s3-hni02.higiocloud.vn/gppm2/prod/cms/17645741711879463.jpg",
-      alt: "Banner Khuyến mãi lớn",
-    },
-  ];
+
   const closeMobileMenu = () => {
     setIsMobileMenuOpen(false);
   };
@@ -252,7 +138,7 @@ export default function Header() {
               </button>
 
               <div className="font-extrabold tracking-tight min-w-max">
-                <a href="#" className="text-xl sm:text-2xl text-gray-800">
+                <a href="/" className="text-xl sm:text-2xl text-gray-800">
                   <img
                     src={logo}
                     alt="Tokyolife Logo"
@@ -283,17 +169,51 @@ export default function Header() {
                 <Search className="w-6 h-6" />
               </button>
 
-              <button className="relative p-2 text-gray-600 font-light">
+              <Link
+                to="/cart"
+                className="relative p-2 text-gray-600 font-light"
+              >
                 <ShoppingCart className="w-7 h-7" />
-              </button>
 
-              <button className="sm:hiddenp-2 text-gray-700 transition duration-150 group hidden sm:block">
+                {/* Chỉ hiển thị chấm đỏ khi có sản phẩm và không trong trạng thái loading */}
+                {!isLoading && cartQuantity > 0 && (
+                  <span className="absolute top-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm">
+                    {cartQuantity > 99 ? "99+" : cartQuantity}
+                  </span>
+                )}
+
+                {/* Hiển thị hiệu ứng pulse nhẹ nếu đang load dữ liệu (tùy chọn) */}
+                {isLoading && (
+                  <span className="absolute top-1 right-1 flex h-3 w-3">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                  </span>
+                )}
+              </Link>
+
+              <Link
+                to="https://ghn.vn/blogs/trang-thai-don-hang"
+                className="sm:hiddenp-2 text-gray-700 transition duration-150 group hidden sm:block"
+              >
                 <PackageSearch className="w-7 h-7" />
-              </button>
+              </Link>
+              {/* profile */}
 
-              <button className="p-2 text-gray-700 transition duration-150 group  hidden sm:block">
-                <UserCircle className="w-7 h-7" />
-              </button>
+              {user ? (
+                <Link
+                  to="/profile"
+                  className="p-2 text-gray-700 transition duration-150 group  hidden sm:block"
+                >
+                  <UserCircle className="w-7 h-7" />
+                </Link>
+              ) : (
+                <Link
+                  to="/auth/login"
+                  className="p-2 text-gray-700 transition duration-150 group hidden sm:block"
+                >
+                  <UserCircle className="w-7 h-7" />
+                </Link>
+              )}
             </div>
           </div>
 
@@ -305,7 +225,7 @@ export default function Header() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Container phải là relative để menu con căn theo nó */}
           <div className="relative">
-            <ul className="flex items-center gap-8">
+            <ul className="flex items-center justify-center gap-8">
               {MENU_CATEGORIES.map((link) => (
                 <li
                   key={link.id}
@@ -313,8 +233,8 @@ export default function Header() {
                   onMouseEnter={() => setHoveredCategory(link.id)}
                   onMouseLeave={() => setHoveredCategory(null)}
                 >
-                  <a
-                    href={`/category/${link.id}`}
+                  <Link
+                    to={`/danh-muc-san-pham/${link.slug}`}
                     className={`
                     flex items-center gap-1 text-black text-sm font-bold hover:text-[#C92027] tracking-wide  transition-colors duration-200
                   `}
@@ -329,59 +249,7 @@ export default function Header() {
                         }`}
                       />
                     )}
-                  </a>
-
-                  {/* --- MEGA MENU START --- */}
-                  {/* Logic: Hiển thị khi hover HOẶC khi đang hover vào chính menu con đó */}
-                  {link.children && (
-                    <div
-                      className={`
-                      absolute left-0 top-full w-full bg-white shadow-xl border-t border-gray-100 rounded-b-lg
-                      transition-all duration-300 ease-in-out origin-top
-                      ${
-                        hoveredCategory === link.id
-                          ? "opacity-100 visible translate-y-0"
-                          : "opacity-0 invisible -translate-y-2"
-                      }
-                    `}
-                    >
-                      <div className="grid grid-cols-4 gap-8 p-8">
-                        {link.children.map((level2) => (
-                          <div
-                            key={level2.id}
-                            className="flex flex-col space-y-3"
-                          >
-                            {/* Level 2: Tiêu đề nhóm */}
-                            <a
-                              href={`/category/${level2.id}`}
-                              className="text-base font-bold text-gray-900 hover:text-[#C92027] transition-colors border-b pb-2 mb-1 border-gray-100"
-                            >
-                              {level2.label}
-                            </a>
-
-                            {/* Level 3: Danh sách link chi tiết */}
-                            {level2.children && level2.children.length > 0 && (
-                              <ul className="space-y-4">
-                                {level2.children.map((level3) => (
-                                  <li key={level3.id}>
-                                    <a
-                                      href={`/category/${level3.id}`}
-                                      className="text-sm font-medium text-gray-600 hover:text-[#C92027] hover:translate-x-1 transition-all duration-200 block"
-                                    >
-                                      {level3.label}
-                                    </a>
-                                  </li>
-                                ))}
-                              </ul>
-                            )}
-                          </div>
-                        ))}
-
-                        {/* Optional: Banner quảng cáo hoặc hình ảnh bên phải menu */}
-                      </div>
-                    </div>
-                  )}
-                  {/* --- MEGA MENU END --- */}
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -460,7 +328,7 @@ export default function Header() {
           )}
         </div>
 
-        {/* Menu Categories */}
+        {/* Menu Category */}
         <div className="py-2">
           <h3 className="px-4 py-2 text-sm font-semibold text-gray-500 uppercase">
             Danh mục
