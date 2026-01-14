@@ -11,14 +11,14 @@ class product_variants extends Model
 {
     //
     protected $fillable = [
-        'product_id',       // bắt buộc phải có, vì variant thuộc về product
+        'product_id',
         'sku',
         'image_url',
         'color',
         'size',
         'sale_price',
         'stock_quantity',
-        'weight',           // đơn vị gram, bạn có thể comment để rõ nghĩa
+        'weight',
         'is_active',
 
     ];

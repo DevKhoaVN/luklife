@@ -7,7 +7,6 @@ use App\Models\product_variants as ProductVariant;
 
 class cart_items extends Model
 {
-    //
     protected $fillable = [
         'id',
         'cart_id',
