@@ -20,6 +20,7 @@ class orders extends Model
         'shipping_address',
         'total_amount',
         'discount_amount',
+        'coupon_code',
         'shipping_fee',
         'grand_total',
         'order_status',

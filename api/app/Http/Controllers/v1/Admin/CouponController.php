@@ -24,13 +24,13 @@ class CouponController extends Controller
     {
         // Validate dữ liệu đầu vào (Rất quan trọng)
         $validated = $request->validate([
-            'code' => 'required|string|unique:coupons,code', // Bắt buộc, không trùng lặp
-            'type' => 'required|in:fixed,percent',           // Chỉ được chọn 'fixed' hoặc 'percent'
-            'value' => 'required|numeric|min:0',             // Phải là số dương
+            'code' => 'required|string|unique:coupons,code',
+            'type' => 'required|in:fixed,percent',
+            'value' => 'required|numeric|min:0',
             'min_order_amount' => 'nullable|numeric|min:0',
             'max_uses' => 'nullable|integer|min:1',
             'starts_at' => 'nullable|date',
-            'expires_at' => 'nullable|date|after:starts_at', // Ngày hết hạn phải sau ngày bắt đầu
+            'expires_at' => 'nullable|date|after:starts_at',
         ]);
 
         // Tạo mới

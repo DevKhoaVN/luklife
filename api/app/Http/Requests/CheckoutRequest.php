@@ -27,7 +27,7 @@ class CheckoutRequest extends FormRequest
             'recipient_phone' => 'required|string|max:20',
             'shipping_address' => 'required|string',
             'payment_method' => 'required|in:cod,vnpay,momo',
-
+            'coupon_code' => 'nullable|string|exists:coupons,code',
             // Validate Giỏ hàng (Mảng các sản phẩm)
             'cart_items' => 'required|array|min:1', // Phải là mảng và có ít nhất 1 món
 
