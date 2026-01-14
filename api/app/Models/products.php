@@ -8,6 +8,7 @@ use App\Models\product_variants as ProductVariant;
 use Spatie\Sluggable\HasSlug;
 use Spatie\Sluggable\SlugOptions;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Database\Factories\ProductFactory;
 
 class products extends Model
 {
@@ -50,5 +51,10 @@ class products extends Model
         }
 
         return round($this->price / (1 - $this->discount_percentage / 100), 0);
+    }
+
+    protected static function newFactory()
+    {
+        return ProductFactory::new();
     }
 }

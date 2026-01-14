@@ -7,6 +7,7 @@ use App\Models\products as Product;
 
 use App\Models\cart_items as CartItem;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Database\Factories\ProductVariantFactory;
 
 class product_variants extends Model
 {
@@ -32,5 +33,9 @@ class product_variants extends Model
     public function cartItems()
     {
         return $this->hasMany(CartItem::class, 'variant_id',);
+    }
+    protected function newFactory()
+    {
+        return ProductVariantFactory::new();
     }
 }

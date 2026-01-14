@@ -4,12 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Database\Factories\OrderFactory;
 
 class orders extends Model
 {
     use HasFactory;
 
-    protected $table = 'orders'; // Map vào bảng orders trong database
+    protected $table = 'orders';
 
     protected $fillable = [
         'order_code',
@@ -39,5 +40,9 @@ class orders extends Model
     public function items()
     {
         return $this->hasMany(order_items::class, 'order_id', 'id');
+    }
+    protected function newFactory()
+    {
+        return OrderFactory::new();
     }
 }

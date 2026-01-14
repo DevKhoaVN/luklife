@@ -6,6 +6,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use App\Models\cart as Cart;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Database\Factories\UserFactory;
 
 class users extends Authenticatable implements JWTSubject
 {
@@ -36,5 +37,9 @@ class users extends Authenticatable implements JWTSubject
     public function getJWTCustomClaims()
     {
         return [];
+    }
+    protected function newFactory()
+    {
+        return UserFactory::new();
     }
 }

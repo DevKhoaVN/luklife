@@ -8,6 +8,7 @@ use App\Models\categories as Category;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Spatie\Sluggable\HasSlug;
 use App\Models\products as Product;
+use Database\Factories\CategoryFactory;
 
 class categories extends Model
 {
@@ -31,12 +32,12 @@ class categories extends Model
     ];
 
     // auto create slug
-    public function getSlugOptions(): SlugOptions {
+    public function getSlugOptions(): SlugOptions
+    {
         return SlugOptions::create()
-                  ->generateSlugsFrom('name')
-                  ->saveSlugsTo(('slug'))
-                  ->doNotGenerateSlugsOnUpdate();
-                                    
+            ->generateSlugsFrom('name')
+            ->saveSlugsTo(('slug'))
+            ->doNotGenerateSlugsOnUpdate();
     }
 
     //Relation
@@ -61,4 +62,8 @@ class categories extends Model
         return $this->belongsToMany(Product::class, 'product_categories', 'category_id', 'product_id');
     }
 
+    protected function newFactory()
+    {
+        return CategoryFactory::new();
+    }
 }
