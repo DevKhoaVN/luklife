@@ -276,7 +276,7 @@ class AuthService
                 throw new Exception('Refresh token không hợp lệ');
             }
 
-            $user = $this->userService->findUserById($token->user_id);
+            $user = $this->userRepo->findUserById($token->user_id);
             if(!$user ){
                 throw new Exception('User không tồn tại');
             }

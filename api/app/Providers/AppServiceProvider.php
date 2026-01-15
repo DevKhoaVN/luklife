@@ -18,7 +18,9 @@ use App\Repositories\Iml\AddressRepositories;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use App\Models\Product;
+use App\Repositories\Contracts\DiscountRepositoriesInterface;
 use App\Repositories\Iml\CartRepositories;
+use App\Repositories\Iml\DiscountRepositories;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -34,6 +36,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(ProductRepositoriesInterface::class, ProductRepositories::class);
         $this->app->bind(CartRepositoriesInterface::class, CartRepositories::class);
         $this->app->bind(AddressRepositoriesInterface::class, AddressRepositories::class);
+        $this->app->bind(DiscountRepositoriesInterface::class, DiscountRepositories::class);
     }
 
     /**

@@ -9,6 +9,7 @@ use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 class UserService
@@ -240,11 +241,11 @@ class UserService
     /**
      * Update existing address
      */
-    public function updateAddress(int $addressId, int $userId, array $data): array
+    public function updateAddress(int $userId, int $addressId, array $data): array
     {
         try {
-            return DB::transaction(function () use ($addressId, $userId, $data) {
-                $address = $this->addressRepo->findByIdAndUserId($addressId, $userId);
+            return DB::transaction(function () use ( $userId, $addressId, $data) {
+                $address = $this->addressRepo->findAddressByUserId($userId);
 
                 if (!$address) {
                     throw new Exception("Địa chỉ không tồn tại hoặc không thuộc về người dùng này");
@@ -278,7 +279,7 @@ class UserService
     {
         try {
             return DB::transaction(function () use ($addressId, $userId) {
-                $address = $this->addressRepo->findByIdAndUserId($addressId, $userId);
+                $address = $this->addressRepo->findAddressByUserId($addressId, $userId);
 
                 if (!$address) {
                     throw new Exception("Địa chỉ không tồn tại hoặc không thuộc về người dùng này");
@@ -343,7 +344,7 @@ class UserService
                 // Set this address as default
                 $this->addressRepo->setAsDefault($addressId);
 
-                $updatedAddress = $this->addressRepo->findByIdAndUserId($addressId, $userId);
+                $updatedAddress = $this->addressRepo->findAddressByUserId($addressId, $userId);
 
                 return [
                     'success' => true,
@@ -355,6 +356,50 @@ class UserService
             return [
                 'success' => false,
                 'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    public function resetPassword(int $userId, string $currentPassword, string $newPassword)
+    {
+        try {
+         
+
+            if (empty($currentPassword) || empty($newPassword)) {
+                throw new Exception("Vui lòng nhập đầy đủ mật khẩu hiện tại và mật khẩu mới");
+            }
+
+            // 1. Lấy user
+            $user = $this->userRepo->findUserById($userId);
+            if (!$user) {
+                throw new Exception("Người dùng không tồn tại");
+            }
+           
+            // 2. Kiểm tra mật khẩu hiện tại có đúng không
+            if (!password_verify((string)$currentPassword, $user->password)) {
+                // Hoặc dùng: if (!Hash::check($currentPassword, $user->password))
+                throw new Exception("Mật khẩu hiện tại không đúng");
+            }
+
+            // 3. Không cho phép mật khẩu mới trùng mật khẩu cũ
+            if (Hash::check($newPassword, $user->password)) {
+                throw new Exception("Mật khẩu mới không được giống mật khẩu cũ");
+            }
+
+            // 4. Hash mật khẩu mới bằng cách chuẩn của Laravel
+            $hashedPassword = password_hash($newPassword, PASSWORD_BCRYPT, ['cost' => 12]);
+
+            // 5. Cập nhật
+            $this->userRepo->updatePassword($userId,$hashedPassword);
+
+            return [
+                'success' => true,
+                'message' => 'Đổi mật khẩu thành công'
+            ];
+        } catch (Exception $e) {
+            return [
+                'success' => false,
+                'message' => $e->getMessage() // Trả về thông báo cụ thể hơn
             ];
         }
     }

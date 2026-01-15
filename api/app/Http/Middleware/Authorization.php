@@ -38,7 +38,7 @@ class Authorization
             return response()->json([
                 'success' => false,
                 'code' => 'ACCESS_TOKEN_EXPIRED',
-                'message' => 'Access token expired'
+                'message' => 'Access token expired !'
             ], 401);
         } catch (JWTException $e) {
             return response()->json([

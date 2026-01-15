@@ -47,10 +47,10 @@ class UserController extends Controller
      */
     public function getAddresses(): JsonResponse
     {
-        $result = $this->userService->getAddresses(auth()->id());
-        $status = $result['success'] ? 200 : 404;
+        $id = JWTAuth::parseToken()->authenticate()->id;
+        $result = $this->userService->getAddresses($id);
 
-        return response()->json($result, $status);
+        return response()->json($result);
     }
 
     /**
@@ -59,45 +59,62 @@ class UserController extends Controller
      */
     public function createAddress(CreateAddressRequest $request): JsonResponse
     {
-        $result = $this->userService->createAddress(auth()->id(), $request->validated());
-        $status = $result['success'] ? 201 : 422;
+        $id = JWTAuth::parseToken()->authenticate()->id;
+        $result = $this->userService->createAddress($id, $request->validated());
+     
 
-        return response()->json($result, $status);
+        return response()->json($result);
     }
 
     /**
      * Update address
      * PUT /api/user/addresses/{id}
      */
-    public function updateAddress(UpdateAddressRequest $request, int $id): JsonResponse
+    public function updateAddress(UpdateAddressRequest $request ): JsonResponse
     {
-        $result = $this->userService->updateAddress($id, auth()->id(), $request->validated());
-        $status = $result['success'] ? 200 : 422;
+        $addressId = $request->route('id');
+        $id = JWTAuth::parseToken()->authenticate()->id;
+        $result = $this->userService->updateAddress($id, $addressId, $request->validated());
 
-        return response()->json($result, $status);
+
+        return response()->json($result);
     }
 
     /**
      * Delete address
      * DELETE /api/user/addresses/{id}
      */
-    public function deleteAddress(int $id): JsonResponse
+    public function deleteAddress(Request $request): JsonResponse
     {
-        $result = $this->userService->deleteAddress($id, auth()->id());
-        $status = $result['success'] ? 200 : 422;
+        $addressId = $request->route('id');
+        $id = JWTAuth::parseToken()->authenticate()->id;
+        $result = $this->userService->deleteAddress($addressId, $id);
 
-        return response()->json($result, $status);
+        return response()->json($result);
     }
 
     /**
      * Set address as default
      * PATCH /api/user/addresses/{id}/set-default
      */
-    public function setAddressDefault(int $id): JsonResponse
+    public function setAddressDefault(Request $request): JsonResponse
     {
-        $result = $this->userService->setAddressDefault($id, auth()->id());
-        $status = $result['success'] ? 200 : 422;
+        $addressId = $request->route('id');
+       
+        $id = JWTAuth::parseToken()->authenticate()->id;
+  
+        $result = $this->userService->setAddressDefault((int)$addressId, $id);
 
-        return response()->json($result, $status);
+        return response()->json($result);
+    }
+    
+    public function resetPassword(Request $request)
+    {
+        //
+        $id = JWTAuth::parseToken()->authenticate()->id;
+        $currentPassword = $request->input('current_password', '');  
+        $newPassword     = $request->input('new_password', '');
+        $result = $this->userService->resetPassword($id, $currentPassword, $newPassword);
+        return response()->json($result);
     }
 }

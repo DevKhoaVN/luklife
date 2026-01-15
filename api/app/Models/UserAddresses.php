@@ -11,6 +11,7 @@ class UserAddresses extends Model
 
      use HasFactory;
 
+    protected $table = 'addresses';
     /**
      * The attributes that are mass assignable.
      *

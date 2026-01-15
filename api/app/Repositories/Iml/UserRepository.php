@@ -39,7 +39,7 @@ use Illuminate\Support\Facades\Hash;
 
     // Hash password và update
     return $user->update([
-      'password' => Hash::make($newPassword)
+      'password' => $newPassword
     ]);
   }
   public function updateUser(int $id, array $data){

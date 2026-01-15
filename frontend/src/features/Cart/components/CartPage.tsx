@@ -303,10 +303,13 @@ export default function CartPage() {
                   }
                   className="group relative w-full overflow-hidden rounded bg-red-800 py-3.5 text-center font-bold text-white shadow-md transition-all hover:bg-red-700 hover:shadow-lg focus:ring-4 focus:ring-red-200 disabled:bg-gray-400 disabled:cursor-not-allowed"
                 >
-                  <span className="flex items-center justify-center gap-2">
+                  <Link
+                    to="/checkout"
+                    className="flex items-center justify-center gap-2"
+                  >
                     TIẾP TỤC THANH TOÁN
                     <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
-                  </span>
+                  </Link>
                 </button>
 
                 <div className="rounded bg-orange-100 p-3 text-center text-xs text-gray-800">

@@ -14,6 +14,8 @@ interface AddressRepositoriesInterface
     /**
      * Find address by ID and user ID
      */
+    public function findAddressByUserId(int $userId): ?UserAddresses;
+
     public function findByIdAndUserId(int $addressId, int $userId): ?UserAddresses;
 
     /**

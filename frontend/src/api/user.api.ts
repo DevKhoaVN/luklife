@@ -7,8 +7,6 @@ export const getProfile = async () => {
   return response.data;
 };
 
-
-
 // Add item to cart
 export const updateProfile = async (data: {
   full_name: string | null;
@@ -49,3 +47,57 @@ export const updateProfile = async (data: {
   return response.data;
 };
 
+export const getAddresses = async () => {
+  const response = await apiClient.get(`/user/address`) ;
+  return response.data;
+}
+export const createAdddress = async (data : {
+  full_name: string;
+  phone: string;
+  address_line: string;
+  province: string;
+  district: string;
+  ward: string;
+  is_default: boolean;
+}) => {
+  const response = await apiClient.post(`/user/address`, {
+    recipient_name: data.full_name,
+    recipient_phone: data.phone,
+    address_line1: data.address_line,
+    city: data.province,
+    district: data.district,
+    ward: data.ward,
+    is_default: data.is_default,
+  }
+  );
+  return response.data;
+}
+
+export const setIsDefaultAddress = async (addressId: number) => {
+  const response = await apiClient.patch(`/user/address/${addressId}/set-default`);
+  return response.data;
+}
+
+export const updateAddress = async (addressId: number, data: {
+  full_name?: string;
+  phone?: string;
+  address_line?: string;
+  province?: string;
+  district?: string;
+  ward?: string;
+  is_default?: boolean;
+} ) => {
+  const response = await apiClient.patch(`/user/address/${addressId}`, data);
+  return response.data;
+}
+
+export const deleteAddress = async (addressId: number) => {
+  const response = await apiClient.delete(`/user/address/${addressId}`);
+  return response.data;
+}
+export const resetPassword = async (
+  current_password: string, new_password: string
+) => {
+  const response = await apiClient.post(`/user/reset-password`, { current_password, new_password });
+  return response.data;
+};

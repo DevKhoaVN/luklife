@@ -8,6 +8,8 @@ use App\Models\Product;
 use App\Models\CartItem;
 class ProductVariant extends Model
 {
+
+protected $table = 'product_variants';
     //
     protected $fillable = [
         'product_id',       // bắt buộc phải có, vì variant thuộc về product
@@ -31,4 +33,8 @@ class ProductVariant extends Model
         return $this->hasMany(CartItem::class, 'variant_id',);
     }
 
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItems::class, 'variant_id');
+    }
 }

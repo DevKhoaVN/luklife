@@ -25,6 +25,13 @@ class AddressRepositories implements AddressRepositoriesInterface
     /**
      * Find address by ID and user ID
      */
+    public function findAddressByUserId(int $userId): ?UserAddresses
+    {
+        return $this->model
+            ->where('user_id', $userId)
+            ->first();
+    }
+
     public function findByIdAndUserId(int $addressId, int $userId): ?UserAddresses
     {
         return $this->model
@@ -32,7 +39,6 @@ class AddressRepositories implements AddressRepositoriesInterface
             ->where('user_id', $userId)
             ->first();
     }
-
     /**
      * Create new address
      */
