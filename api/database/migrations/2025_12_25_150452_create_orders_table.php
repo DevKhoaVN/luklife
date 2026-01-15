@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->string('order_code', 50)->unique();
-            $table->foreignId('user_id')->nullable()->unique()->constrained()->onDelete('cascade');
+            $table->foreignId('user_id')->nullable()->constrained()->onDelete('cascade');
             $table->foreignId('shipping_address_id')->nullable()->constrained('addresses')->onDelete('set null');
             $table->string('recipient_name');
             $table->string('recipient_phone', 20);

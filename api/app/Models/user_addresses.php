@@ -11,7 +11,7 @@ class user_addresses extends Model
     use HasFactory;
     protected $table = 'addresses';
     protected $guarded = [];
-    protected function newFactory()
+    protected static function newFactory()
     {
         return AddressFactory::new();
     }

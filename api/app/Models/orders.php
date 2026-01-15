@@ -41,7 +41,7 @@ class orders extends Model
     {
         return $this->hasMany(order_items::class, 'order_id', 'id');
     }
-    protected function newFactory()
+    protected static function newFactory()
     {
         return OrderFactory::new();
     }

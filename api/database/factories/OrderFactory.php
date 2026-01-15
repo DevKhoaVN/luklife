@@ -3,12 +3,14 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use App\Models\orders;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Model>
  */
 class OrderFactory extends Factory
 {
+    protected $model = orders::class;
     /**
      * Define the model's default state.
      *
@@ -24,7 +26,7 @@ class OrderFactory extends Factory
             'shipping_address' => $this->faker->address,
             'total_amount' => 0, // Sẽ tính lại sau khi có OrderItem
             'grand_total' => 0,
-            'order_status' => $this->faker->randomElement(['pending', 'processing', 'shipped', 'delivered', 'cancelled']),
+            'order_status' => $this->faker->randomElement(['pending', 'processing', 'shipping', 'delivered', 'cancelled']),
             'payment_status' => $this->faker->randomElement(['unpaid', 'paid']),
             'payment_method' => $this->faker->randomElement(['cod', 'vnpay', 'momo']),
         ];

@@ -3,12 +3,14 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use App\Models\product_variants;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Model>
  */
 class ProductVariantFactory extends Factory
 {
+    protected $model = product_variants::class;
     /**
      * Define the model's default state.
      *

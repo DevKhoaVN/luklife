@@ -62,7 +62,7 @@ class categories extends Model
         return $this->belongsToMany(Product::class, 'product_categories', 'category_id', 'product_id');
     }
 
-    protected function newFactory()
+    protected static function newFactory()
     {
         return CategoryFactory::new();
     }

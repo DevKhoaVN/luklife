@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Database\Factories\OrderItemFactory;
 
 class order_items extends Model
 {
@@ -26,5 +27,10 @@ class order_items extends Model
     public function variant()
     {
         return $this->belongsTo(product_variants::class, 'variant_id');
+    }
+
+    protected static function newFactory()
+    {
+        return OrderItemFactory::new();
     }
 }

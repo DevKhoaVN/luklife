@@ -38,7 +38,7 @@ class users extends Authenticatable implements JWTSubject
     {
         return [];
     }
-    protected function newFactory()
+    protected static function newFactory()
     {
         return UserFactory::new();
     }

@@ -34,7 +34,7 @@ class product_variants extends Model
     {
         return $this->hasMany(CartItem::class, 'variant_id',);
     }
-    protected function newFactory()
+    protected static function newFactory()
     {
         return ProductVariantFactory::new();
     }
