@@ -25,7 +25,7 @@ class CartRepositories implements CartRepositoriesInterface
 
         $cart->load([
             // Load CartItem
-            'items' => function (Builder $query) {
+            'items' => function ($query) {
                 // Trong quan hệ CartItem, load tiếp Variant và Product
                 $query->with('variant.product');
             }
@@ -45,7 +45,7 @@ class CartRepositories implements CartRepositoriesInterface
         // 2. Eager Load các mối quan hệ cần thiết, giống như findUserCart
         $cart->load([
             // Load CartItem
-            'items' => function (Builder $query) {
+            'items' => function ($query) {
                 // Trong quan hệ CartItem, load tiếp Variant và Product
                 $query->with('variant.product');
             }
@@ -54,28 +54,28 @@ class CartRepositories implements CartRepositoriesInterface
         return $cart;
     }
 
-  
+
     public function saveItem(CartItem $item): CartItem
     {
         $item->save();
         return $item->fresh();
     }
 
-   
 
-    public function deleteCartItems(int $cartItemId):bool
+
+    public function deleteCartItems(int $cartItemId): bool
     {
         $deletedCount = CartItem::destroy($cartItemId);
         return $deletedCount > 0;
     }
 
 
-  
+
     public function findExistingItem(int $cartId, int $productId, ?string $variantId): ?CartItem
     {
         return CartItem::where('cart_id', $cartId)
             ->where('product_id', $productId)
-            ->where('product_variant_id', $variantId)
+            ->where('variant_id', $variantId)
             ->first();
     }
 

@@ -55,7 +55,6 @@ Route::prefix('products')->group(function () {
 
 
 Route::prefix('cart')->group(function () {
-
     Route::get('/', [CartController::class, 'getCart']);
     Route::post('items', [CartController::class, 'addItem']);
     Route::put('items/{itemId}', [CartController::class, 'updateItem']);
