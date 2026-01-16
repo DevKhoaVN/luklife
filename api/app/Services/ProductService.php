@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Builder;
 use  Illuminate\Support\Facades\DB;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Exception;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class ProductService
 {
@@ -25,53 +27,73 @@ class ProductService
         DB::beginTransaction();
 
         try {
+            // --- 1. XỬ LÝ UPLOAD THUMBNAIL (ẢNH ĐẠI DIỆN) ---
+            // Kiểm tra nếu có gửi file thumbnail lên thì upload
+            if (isset($data['thumbnail']) && $data['thumbnail'] instanceof \Illuminate\Http\UploadedFile) {
+                // Lưu vào storage/app/public/products
+                $path = $data['thumbnail']->store('public/products');
+                // Chuyển đổi đường dẫn: public/products/abc.jpg -> storage/products/abc.jpg
+                $data['thumbnail'] = str_replace('public/', 'storage/', $path);
+            }
 
+            // --- 2. CHUẨN BỊ DỮ LIỆU ĐỂ LƯU VÀO BẢNG PRODUCTS ---
             $productAttri = [
-                'thumbnail' => $data['thumbnail'],
-                'name' => $data['name'],
-                'price' => $data['price'],
+                'thumbnail'           => $data['thumbnail'] ?? null, // Lưu đường dẫn string
+                'name'                => $data['name'],
+                'price'               => $data['price'],
                 'discount_percentage' => $data['discount_percentage'] ?? 0,
-                'description' => $data['description'] ?? null,
-                'is_active' => 1,
-                "is_featured" => $data['descris_featurediption'] ?? false,
+                'description'         => $data['description'] ?? null,
+                'is_active'           => $data['is_active'] ?? 1, // Mặc định là 1 (Active)
+                'is_featured'         => $data['is_featured'] ?? 0, // Sửa lỗi chính tả ở đây
             ];
 
+            // Tạo sản phẩm
             $product = $this->productRepo->create($productAttri);
-            
 
+            // --- 3. XỬ LÝ UPLOAD THƯ VIỆN ẢNH (GALLERY) ---
+            // Nếu có gửi mảng ảnh 'images'
+            if (isset($data['images']) && is_array($data['images'])) {
+                $this->uploadImages($product, $data['images']);
+            }
+
+            // --- 4. LIÊN KẾT DANH MỤC (CATEGORIES) ---
             if (!empty($data['category_ids'])) {
                 $product->categories()->attach($data['category_ids']);
             }
 
+            // --- 5. TẠO BIẾN THỂ (VARIANTS) ---
             if (!empty($data['variants'])) {
                 foreach ($data['variants'] as $variantData) {
                     $variantData['product_id'] = $product->id;
-                    $variantData['sku'] = CodeGenerator::geneerateSku();
+                    // Đảm bảo class CodeGenerator có hàm generateSku (bạn check lại chính tả hàm này nhé)
+                    $variantData['sku'] = CodeGenerator::generateSku();
                     $this->productRepo->createProductVariant($variantData);
                 }
             }
 
-             DB::commit();
-           
+            DB::commit();
 
             return [
                 'success' => true,
                 'message' => "Thêm sản phẩm thành công",
-                'data' => $product
+                'data'    => $product->load(['images', 'variants']) // Trả về kèm ảnh và biến thể để check luôn
             ];
         } catch (Exception $e) {
-
             DB::rollBack();
+
+            // Ghi log lỗi để debug nếu cần
+            Log::error("Lỗi tạo sản phẩm: " . $e->getMessage());
+
             return [
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => 'Lỗi hệ thống: ' . $e->getMessage()
             ];
         }
     }
 
     public function getProducts(array $filters)
     {
-        try{
+        try {
             $query = Product::query();
 
             // Tìm kiếm
@@ -129,8 +151,7 @@ class ProductService
                 'message' => "Tìm kiếm  sản phẩm thành công",
                 'data' => $result
             ];
-          
-        }catch(Exception $e) {
+        } catch (Exception $e) {
 
             return [
                 'success' => false,
@@ -140,12 +161,12 @@ class ProductService
     }
     public function getProductDetail(string $slug)
     {
-        
+
         try {
             $result =  Product::with([
                 'categories' => fn($q) => $q->select('categories.id', 'name', 'slug'),
                 'product_variants' => fn($q) => $q->where('is_active', true) // chỉ lấy variant active
-                    ->select('id','product_id', 'sku', 'color', 'size', 'sale_price', 'stock_quantity', 'image_url')
+                    ->select('id', 'product_id', 'sku', 'color', 'size', 'sale_price', 'stock_quantity', 'image_url')
             ])
                 ->select('id', 'slug', 'name', 'thumbnail', 'price', 'discount_percentage', 'description', 'is_active')
                 ->where('slug', $slug)
@@ -157,9 +178,7 @@ class ProductService
                 'message' => "Tìm kiếm  sản phẩm thành công",
                 'data' => $result
             ];
-
-        }catch(Exception $e)
-        {
+        } catch (Exception $e) {
             return [
                 'success' => false,
                 'message' => $e->getMessage(),
@@ -189,15 +208,15 @@ class ProductService
 
             $result =  $product->load(['categories:id,name,slug', 'product_variants']);
             return [
-                'sccuess' => false,
+                'success' => false,
                 'message' => 'Cập nhật sản phẩm thành công',
                 'data' => $result
             ];
         } catch (\Exception $e) {
-        
+
             DB::rollBack();
             return [
-                'sccuess' => false,
+                'success' => false,
                 'message' => $e->getMessage(),
             ];
         }
@@ -220,16 +239,14 @@ class ProductService
             if ($variantId && in_array($variantId, $currentVariantIds)) {
                 // case 1: variant tồn tại , tiến hành update
                 $variant = ProductVariant::find($variantId);
-             
+
                 if ($variant) {
                     $variant->updateOrCreate(
-                      ['id' =>  $variantId ],
+                        ['id' =>  $variantId],
                         $variantAttributes
                     );
                     $incomingVariantIds[] = $variantId; // Đánh dấu variant này đã được xử lý
                 }
-
-            
             } else {
                 // case 2: variant chưa tồn tại , tạo mới
                 $newVariant = $product->product_variants()->create($variantAttributes);
@@ -246,22 +263,53 @@ class ProductService
         }
     }
 
-    public function deleteProduct(int $id){
-       try {
+    public function deleteProduct(int $id)
+    {
+        try {
             $result = $this->productRepo->delete($id);
             return [
-                'sccuess' => $result,
+                'success' => $result,
                 'message' => 'Xóa sản phẩm thành công',
             ];
-       }catch(Exception $e) {
+        } catch (Exception $e) {
             return [
-                'sccuess' => false,
+                'succcess' => false,
                 'message' => $e->getMessage(),
-              
+
             ];
-       }
+        }
     }
+    /**
+     * Hàm hỗ trợ upload danh sách ảnh cho sản phẩm
+     * @param $product: Đối tượng sản phẩm vừa tạo
+     * @param $images: Danh sách file ảnh gửi lên từ request
+     */
+    public function uploadImages($product, $images)
+    {
+        // 1. Kiểm tra xem có ảnh không
+        if (!$images || !is_array($images)) {
+            return;
+        }
 
+        // 2. Duyệt qua từng file ảnh một
+        foreach ($images as $key => $image) {
+
+            // Đặt tên file (ví dụ: product_1_1705392.jpg) để tránh trùng tên
+            $fileName = 'product_' . $product->id . '_' . time() . '_' . $key . '.' . $image->getClientOriginalExtension();
+
+            // Lưu file vào thư mục 'public/products'
+            // Kết quả trả về đường dẫn, ví dụ: 'storage/products/abc.jpg'
+            $path = $image->storeAs('public/products', $fileName);
+
+            // Sửa lại đường dẫn để lưu vào DB (bỏ chữ public/ đi thay bằng storage/)
+            $dbPath = str_replace('public/', 'storage/', $path);
+
+            // 3. Tạo dữ liệu vào bảng product_images thông qua quan hệ images()
+            $product->images()->create([
+                'image_url' => $dbPath,
+                'position'  => $key,          // Ảnh đầu tiên số 0, ảnh sau số 1...
+                'is_thumbnail' => $key === 0, // Ảnh đầu tiên mặc định là ảnh đại diện
+            ]);
+        }
+    }
 }
-    
-

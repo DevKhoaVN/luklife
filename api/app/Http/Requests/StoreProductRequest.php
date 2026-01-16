@@ -22,7 +22,7 @@ class StoreProductRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'thumbnail' => 'nullable|string|max:255',
+            'thumbnail' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:2048'],
             'name' => ['required', 'string', 'max:255'],
             'price' => ['required', 'numeric', 'min:0'],
             'discount_percentage' => ['nullable', 'integer', 'min:0', 'max:100'],
@@ -43,6 +43,9 @@ class StoreProductRequest extends FormRequest
             'variants.*.sale_price' => ['nullable', 'numeric', 'min:0'],
             'variants.*.stock_quantity' => ['required', 'integer', 'min:0'],
             'variants.*.is_active' => ['bool'],
+
+            'images' => ['nullable', 'array'], // "images" phải là một danh sách (mảng)
+            'images.*' => ['image', 'mimes:jpeg,png,jpg,gif', 'max:2048'], // Mỗi file trong đó phải là ảnh, tối đa 2MB
         ];
     }
 }

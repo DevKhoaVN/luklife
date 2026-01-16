@@ -36,7 +36,7 @@ class products extends Model
             ->preventOverwrite();
     }
 
-    public function product_variants()
+    public function variants()
     {
         return $this->hasMany(ProductVariant::class, 'product_id');
     }
@@ -55,11 +55,15 @@ class products extends Model
     }
     public function images()
     {
-        return $this->hasMany(ProductImage::class)->orderBy('position', 'asc');
+        return $this->hasMany(ProductImage::class, 'product_id')->orderBy('position', 'asc');
     }
 
     protected static function newFactory()
     {
         return ProductFactory::new();
+    }
+    public function product_variants()
+    {
+        return $this->variants(); // Gọi lại hàm trên
     }
 }
