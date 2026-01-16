@@ -12,6 +12,8 @@ use App\Services\AuthService;
 use App\Services\ProductService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use App\Http\Requests\UpdateProductRequest;
+use App\Models\products;
 
 use function Symfony\Component\Translation\t;
 
@@ -25,13 +27,15 @@ class ProductController extends Controller
         $this->productService = $productService;
     }
 
-    public function create(StoreProductRequest $request){
+    public function create(StoreProductRequest $request)
+    {
         $data = $request->validated();
         $result = $this->productService->createProduct($data);
         return response()->json($result);
     }
-    
-    public function index(ProductIndexRequest $request){
+
+    public function index(ProductIndexRequest $request)
+    {
         $filters = [
             'search'         => $request->getSearch(),
             'category' => $request->getCategory(),
@@ -43,24 +47,27 @@ class ProductController extends Controller
         return response()->json($result);
     }
 
-    public function detail(Request $request, $slug){
-    
+    public function detail(Request $request, $slug)
+    {
+
         $reuslt = $this->productService->getProductDetail($slug);
         return response()->json($reuslt);
     }
 
-        public function update(StoreProductRequest $request,  $id){
-       
-           $product = Product::findOrFail($id);
-            $data = $request->validated();
-      
-            $result = $this->productService->updateProduct($product, $data);
-            return response()->json($result);
-        }
- 
+    public function update(UpdateProductRequest $request,  $id)
+    {
 
-        public function delete($id){
-            $reuslt = $this->productService->deleteProduct($id);
-            return response()->json($reuslt);
-        }
+        $product = Product::findOrFail($id);
+        $data = $request->validated();
+
+        $result = $this->productService->updateProduct($product, $data);
+        return response()->json($result);
+    }
+
+
+    public function delete($id)
+    {
+        $reuslt = $this->productService->deleteProduct($id);
+        return response()->json($reuslt);
+    }
 }

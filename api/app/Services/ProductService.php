@@ -165,6 +165,7 @@ class ProductService
         try {
             $result =  Product::with([
                 'categories' => fn($q) => $q->select('categories.id', 'name', 'slug'),
+                'images',
                 'product_variants' => fn($q) => $q->where('is_active', true) // chỉ lấy variant active
                     ->select('id', 'product_id', 'sku', 'color', 'size', 'sale_price', 'stock_quantity', 'image_url')
             ])
@@ -191,6 +192,17 @@ class ProductService
         DB::beginTransaction();
 
         try {
+            // [CẬP NHẬT] Logic upload Thumbnail mới
+            if (isset($data['thumbnail']) && $data['thumbnail'] instanceof \Illuminate\Http\UploadedFile) {
+                // 1. Xóa ảnh cũ nếu có
+                if ($product->thumbnail) {
+                    $oldPath = str_replace('storage/', 'public/', $product->thumbnail);
+                    if (Storage::exists($oldPath)) Storage::delete($oldPath);
+                }
+                // 2. Upload ảnh mới
+                $path = $data['thumbnail']->store('public/products');
+                $data['thumbnail'] = str_replace('public/', 'storage/', $path);
+            }
             // BƯỚC 1: Cập nhật thông tin cơ bản của Sản phẩm
             $productData = collect($data)->except(['variants', 'category_ids'])->toArray();
             $product->update($productData);
@@ -208,7 +220,7 @@ class ProductService
 
             $result =  $product->load(['categories:id,name,slug', 'product_variants']);
             return [
-                'success' => false,
+                'success' => true,
                 'message' => 'Cập nhật sản phẩm thành công',
                 'data' => $result
             ];
@@ -236,20 +248,23 @@ class ProductService
             // Loại bỏ ID khi update
             $variantAttributes = collect($variantData)->except('id')->toArray();
 
+            // Nếu sku chưa có thì tự sinh (cho trường hợp tạo mới variant trong lúc update product)
+            if (!isset($variantAttributes['sku']) && !$variantId) {
+                $variantAttributes['sku'] = CodeGenerator::generateSku();
+            }
+
             if ($variantId && in_array($variantId, $currentVariantIds)) {
                 // case 1: variant tồn tại , tiến hành update
                 $variant = ProductVariant::find($variantId);
 
                 if ($variant) {
-                    $variant->updateOrCreate(
-                        ['id' =>  $variantId],
-                        $variantAttributes
-                    );
-                    $incomingVariantIds[] = $variantId; // Đánh dấu variant này đã được xử lý
+                    $variant->update($variantAttributes);
+                    $incomingVariantIds[] = $variantId;
                 }
             } else {
                 // case 2: variant chưa tồn tại , tạo mới
-                $newVariant = $product->product_variants()->create($variantAttributes);
+                $variantAttributes['product_id'] = $product->id; // Đảm bảo có product_id
+                $newVariant = ProductVariant::create($variantAttributes);
                 $incomingVariantIds[] = $newVariant->id; // Lưu ID variant mới
             }
         }
@@ -266,7 +281,23 @@ class ProductService
     public function deleteProduct(int $id)
     {
         try {
-            $result = $this->productRepo->delete($id);
+            $product = Product::with('images')->findOrFail($id);
+
+            // 1. Xóa Thumbnail
+            if ($product->thumbnail) {
+                $thumbPath = str_replace('storage/', 'public/', $product->thumbnail);
+                if (Storage::exists($thumbPath)) Storage::delete($thumbPath);
+            }
+
+            // 2. Xóa Gallery Images
+            if ($product->images) {
+                foreach ($product->images as $img) {
+                    $imgPath = str_replace('storage/', 'public/', $img->image_url);
+                    if (Storage::exists($imgPath)) Storage::delete($imgPath);
+                }
+            }
+
+            $$result = $product->delete();
             return [
                 'success' => $result,
                 'message' => 'Xóa sản phẩm thành công',
