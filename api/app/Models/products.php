@@ -9,6 +9,7 @@ use Spatie\Sluggable\HasSlug;
 use Spatie\Sluggable\SlugOptions;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Database\Factories\ProductFactory;
+use App\Models\ProductImage;
 
 class products extends Model
 {
@@ -51,6 +52,10 @@ class products extends Model
         }
 
         return round($this->price / (1 - $this->discount_percentage / 100), 0);
+    }
+    public function images()
+    {
+        return $this->hasMany(ProductImage::class)->orderBy('position', 'asc');
     }
 
     protected static function newFactory()
