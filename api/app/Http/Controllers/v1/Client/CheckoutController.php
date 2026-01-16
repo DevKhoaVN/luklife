@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\orders;
 use App\Models\order_items;
+use App\Models\product_variants; // <--- QUAN TRỌNG: Thêm model biến thể
 use App\Services\VnpayService;
 use App\Http\Requests\CheckoutRequest;
 use Exception;
@@ -18,6 +19,7 @@ class CheckoutController extends Controller
 {
     protected $vnpayService;
     protected $momoService;
+
     public function __construct(VnpayService $vnpayService, momoService $momoService)
     {
         $this->vnpayService = $vnpayService;
@@ -27,16 +29,22 @@ class CheckoutController extends Controller
     public function checkout(CheckoutRequest $request)
     {
         $data = $request->validated();
+
+        // Bắt đầu Transaction: Nếu có lỗi (hết hàng, lỗi DB...) thì rollback toàn bộ
         DB::beginTransaction();
         try {
             $totalAmount = 0;
             $discountAmount = 0;
             $shippingFee = 0;
+
+            // Tính tổng tiền (Loop 1)
             foreach ($data['cart_items'] as $item) {
                 $totalAmount += $item['unit_price'] * $item['quantity'];
             }
+
             $grandTotal = $totalAmount - $discountAmount + $shippingFee;
-            //Tạo đơn
+
+            // 1. Tạo đơn hàng (Order Header)
             $order = orders::create([
                 'order_code' => 'ORD' . time() . rand(100, 999),
                 'user_id' => $request->user() ? $request->user()->id : null,
@@ -51,8 +59,31 @@ class CheckoutController extends Controller
                 'payment_status' => 'unpaid',
                 'order_status' => 'pending'
             ]);
-            //Tạo chi tiết đơn
+
+            // 2. Tạo chi tiết đơn hàng (Order Items) & TRỪ TỒN KHO
             foreach ($data['cart_items'] as $item) {
+
+                // --- [LOGIC MỚI] BẮT ĐẦU ---
+
+                // Tìm biến thể sản phẩm và khóa dòng này lại (lockForUpdate)
+                // để tránh 2 người cùng mua 1 cái áo cuối cùng cùng lúc
+                $variant = product_variants::lockForUpdate()->find($item['variant_id']);
+
+                if (!$variant) {
+                    throw new Exception("Sản phẩm (ID: {$item['variant_id']}) không tồn tại.");
+                }
+
+                // Kiểm tra số lượng tồn kho
+                if ($variant->stock_quantity < $item['quantity']) {
+                    throw new Exception("Sản phẩm '{$variant->sku}' không đủ hàng. (Còn: {$variant->stock_quantity}, Bạn đặt: {$item['quantity']})");
+                }
+
+                // Trừ kho
+                $variant->decrement('stock_quantity', $item['quantity']);
+
+                // --- [LOGIC MỚI] KẾT THÚC ---
+
+                // Tạo record trong bảng order_items
                 order_items::create([
                     'order_id' => $order->id,
                     'variant_id' => $item['variant_id'],
@@ -62,7 +93,10 @@ class CheckoutController extends Controller
                     'sub_total' => $item['unit_price'] * $item['quantity'],
                 ]);
             }
+
             DB::commit();
+
+            // 3. Xử lý thanh toán (Giữ nguyên logic cũ của bạn)
             if ($data['payment_method'] === 'vnpay') {
                 $paymentUrl = $this->vnpayService->createPaymentUrl([
                     'order_code' => $order->order_code,
@@ -94,10 +128,10 @@ class CheckoutController extends Controller
                 'order_code' => $order->order_code
             ]);
         } catch (\Exception $e) {
-            DB::rollBack();
+            DB::rollBack(); // Hoàn tác mọi thứ nếu có lỗi (kể cả trừ kho)
             return response()->json([
                 'success' => false,
-                'message' => 'Lỗi hệ thống:' . $e->getMessage()
+                'message' => 'Lỗi đặt hàng: ' . $e->getMessage() // Trả về thông báo lỗi cụ thể (ví dụ: Không đủ hàng)
             ], 500);
         }
     }
