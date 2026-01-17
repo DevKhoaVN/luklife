@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\Product;
 
 use App\Models\CartItem;
+
 class ProductVariant extends Model
 {
 
-protected $table = 'product_variants';
+    protected $table = 'productvariant';
     //
     protected $fillable = [
         'product_id',       // bắt buộc phải có, vì variant thuộc về product
@@ -24,7 +25,8 @@ protected $table = 'product_variants';
 
     ];
 
-    public function product(){
+    public function product()
+    {
         return $this->belongsTo(Product::class);
     }
 
