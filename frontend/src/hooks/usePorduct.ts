@@ -1,13 +1,18 @@
 // src/hooks/useProducts.ts
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   getWhiteListProduct,
   getOnlineExclusiveOffer,
   getSaleProduct,
   getProductsByCategory,
   getProductBySlug,
+  getAllProducts,
+  type Product,
+  createProduct,
+  updateProduct,
+  deleteProduct,
 } from '../api/product.api';
-import { linkOptions } from '@tanstack/react-router';
+import { toast } from 'react-toastify';
 
 
 // Hook cho whitelist products
@@ -79,3 +84,49 @@ export const useInfiniteProductsByCategory = ({
     enabled: !!slug,
   });
 };
+
+export const useGetAllProducts = () => {
+  return useQuery({
+    queryKey: ['allProducts'],
+    queryFn: () => getAllProducts(),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+}
+
+export const useCreateProduct = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: Product) => createProduct(data),
+    onSuccess: () => {
+      // Làm mới danh sách sản phẩm sau khi tạo thành công
+      toast.success('Tạo sản phẩm thành công');
+      queryClient.invalidateQueries({ queryKey: ['allProducts'] });
+    },
+  });
+};
+
+export const useUpdateProduct = () => {
+   const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: Product) => updateProduct (data),
+    onSuccess: () => {
+      // Làm mới danh sách sản phẩm sau khi tạo thành công
+      toast.success('Cập nhật sản phẩm thành công');
+      queryClient.invalidateQueries({ queryKey: ['allProducts'] });
+    },
+  });
+}
+
+export const useDeleteProduct = () => {
+    const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => deleteProduct (id),
+    onSuccess: () => {
+      // Làm mới danh sách sản phẩm sau khi tạo thành công
+      toast.success('Xóa sản phẩm thành công');
+      queryClient.invalidateQueries({ queryKey: ['allProducts'] });
+    },
+  });
+}

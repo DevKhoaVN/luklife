@@ -26,6 +26,7 @@ import AppContext from "../../context/AppContext";
 import { toast } from "react-toastify";
 import { getImageUrl } from "../../utils/inedx";
 import { useApplyDiscount } from "../../hooks/Discounts";
+import { useCheckout } from "../../hooks/Checkout";
 
 interface AddressFormData {
   fullName: string;
@@ -45,13 +46,17 @@ export default function CheckoutPage() {
   const [selectedAddress, setSelectedAddress] = useState<any>(null);
   const [appliedDiscount, setAppliedDiscount] = useState<any>(null);
 
-  // Get addresses
+  // address data mutate
   const { data: addressesData, isLoading: isLoadingAddresses } =
     useGetAddresses();
+  // cart update mutate
   const { mutate: updateCartMutate, isPending: isUpdatingCart } =
     useUpdateCart();
+  //apply discount mutate
   const { mutate: applyDiscountMutate, isPending: isApplyingDiscount } =
     useApplyDiscount();
+  // checkout mutate
+  const { mutate: checkoutMutate, isPending: isCheckingOut } = useCheckout();
 
   // ✅ React Hook Form cho Address
   const {
@@ -282,7 +287,7 @@ export default function CheckoutPage() {
     resetAddress();
   };
 
-  // ✅ CHECKOUT
+  //  CHECKOUT
   const handleCheckout = () => {
     if (!selectedAddress) {
       toast.error("Vui lòng chọn địa chỉ giao hàng");
@@ -294,23 +299,34 @@ export default function CheckoutPage() {
       return;
     }
 
+    // Format địa chỉ đầy đủ
+    const fullAddress = `${selectedAddress.address_line1}, ${selectedAddress.ward}, ${selectedAddress.district}, ${selectedAddress.city}`;
+
     const checkoutData = {
-      address_id: selectedAddress.id,
+      recipient_name: selectedAddress.recipient_name,
+      recipient_phone: selectedAddress.recipient_phone,
+      shipping_address: fullAddress,
       payment_method: paymentMethod,
-      items: mappedItems.map((item) => ({
+      discount_code: appliedDiscount?.discount_code,
+      cart_items: mappedItems.map((item) => ({
         variant_id: item.variantId,
         quantity: item.quantity,
-        price: item.price,
+        unit_price: item.price,
       })),
-      discount_code: appliedDiscount?.discount_code || null,
-      subtotal: orderSummary.subtotal,
-      shipping_fee: orderSummary.shipping,
-      discount_amount: orderSummary.discount,
-      total: orderSummary.total,
     };
 
-    console.log("✅ Checkout with:", checkoutData);
-    toast.success("Đặt hàng thành công!");
+    checkoutMutate(checkoutData, {
+      onSuccess: (response) => {
+        if (response.success) {
+          if (response.data.payment_url) {
+            // Chuyển hướng đến URL thanh toán của VNPAY
+            window.location.href = response.data.payment_url;
+          }
+          toast.success("Đặt hàng thành công!");
+          console.log("response order ", response);
+        }
+      },
+    });
   };
 
   return (
@@ -720,10 +736,21 @@ export default function CheckoutPage() {
 
                 <button
                   onClick={handleCheckout}
-                  disabled={!selectedAddress || mappedItems.length === 0}
+                  disabled={
+                    !selectedAddress ||
+                    mappedItems.length === 0 ||
+                    isCheckingOut
+                  }
                   className="w-full rounded-lg bg-red-700 py-3 text-sm font-bold uppercase text-white shadow-md transition-all hover:bg-red-800 hover:shadow-lg disabled:cursor-not-allowed disabled:bg-gray-400"
                 >
-                  Thanh toán
+                  {isCheckingOut ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Đang xử lý...
+                    </span>
+                  ) : (
+                    "Đặt hàng"
+                  )}
                 </button>
 
                 {/* Chỉ hiển thị tip khi chưa có discount */}
@@ -804,7 +831,7 @@ export default function CheckoutPage() {
                 Thêm địa chỉ mới
               </h4>
 
-              <form onSubmit={handleSubmit(onSubmitNewAddress)}>
+              <form onSubmit={handleSubmitAddress(onSubmitNewAddress)}>
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div>
@@ -813,7 +840,7 @@ export default function CheckoutPage() {
                       </label>
                       <input
                         type="text"
-                        {...register("fullName", {
+                        {...registerAddress("fullName", {
                           required: "Họ và tên là bắt buộc",
                           minLength: {
                             value: 2,
@@ -821,15 +848,15 @@ export default function CheckoutPage() {
                           },
                         })}
                         className={`w-full rounded border px-3 py-2 text-sm focus:outline-none ${
-                          errors.fullName
+                          addressErrors.fullName
                             ? "border-red-500 focus:border-red-600"
                             : "border-gray-300 focus:border-red-700"
                         }`}
                         placeholder="Nhập họ và tên"
                       />
-                      {errors.fullName && (
+                      {addressErrors.fullName && (
                         <p className="mt-1 text-xs text-red-600">
-                          {errors.fullName.message}
+                          {addressErrors.fullName.message}
                         </p>
                       )}
                     </div>
@@ -840,7 +867,7 @@ export default function CheckoutPage() {
                       </label>
                       <input
                         type="tel"
-                        {...register("phone", {
+                        {...registerAddress("phone", {
                           required: "Số điện thoại là bắt buộc",
                           pattern: {
                             value: /^\d{10,11}$/,
@@ -848,15 +875,15 @@ export default function CheckoutPage() {
                           },
                         })}
                         className={`w-full rounded border px-3 py-2 text-sm focus:outline-none ${
-                          errors.phone
+                          addressErrors.phone
                             ? "border-red-500 focus:border-red-600"
                             : "border-gray-300 focus:border-red-700"
                         }`}
                         placeholder="Ví dụ: 0987654321"
                       />
-                      {errors.phone && (
+                      {addressErrors.phone && (
                         <p className="mt-1 text-xs text-red-600">
-                          {errors.phone.message}
+                          {addressErrors.phone.message}
                         </p>
                       )}
                     </div>
@@ -868,7 +895,7 @@ export default function CheckoutPage() {
                     </label>
                     <input
                       type="text"
-                      {...register("street", {
+                      {...registerAddress("street", {
                         required: "Địa chỉ chi tiết là bắt buộc",
                         minLength: {
                           value: 5,
@@ -876,15 +903,15 @@ export default function CheckoutPage() {
                         },
                       })}
                       className={`w-full rounded border px-3 py-2 text-sm focus:outline-none ${
-                        errors.street
+                        addressErrors.street
                           ? "border-red-500 focus:border-red-600"
                           : "border-gray-300 focus:border-red-700"
                       }`}
                       placeholder="Ví dụ: Số 10, Phố Hàng Bạc"
                     />
-                    {errors.street && (
+                    {addressErrors.street && (
                       <p className="mt-1 text-xs text-red-600">
-                        {errors.street.message}
+                        {addressErrors.street.message}
                       </p>
                     )}
                   </div>
@@ -896,19 +923,19 @@ export default function CheckoutPage() {
                       </label>
                       <input
                         type="text"
-                        {...register("ward", {
+                        {...registerAddress("ward", {
                           required: "Phường/Xã là bắt buộc",
                         })}
                         className={`w-full rounded border px-3 py-2 text-sm focus:outline-none ${
-                          errors.ward
+                          addressErrors.ward
                             ? "border-red-500 focus:border-red-600"
                             : "border-gray-300 focus:border-red-700"
                         }`}
                         placeholder="Ví dụ: Hàng Bạc"
                       />
-                      {errors.ward && (
+                      {addressErrors.ward && (
                         <p className="mt-1 text-xs text-red-600">
-                          {errors.ward.message}
+                          {addressErrors.ward.message}
                         </p>
                       )}
                     </div>
@@ -919,19 +946,19 @@ export default function CheckoutPage() {
                       </label>
                       <input
                         type="text"
-                        {...register("district", {
+                        {...registerAddress("district", {
                           required: "Quận/Huyện là bắt buộc",
                         })}
                         className={`w-full rounded border px-3 py-2 text-sm focus:outline-none ${
-                          errors.district
+                          addressErrors.district
                             ? "border-red-500 focus:border-red-600"
                             : "border-gray-300 focus:border-red-700"
                         }`}
                         placeholder="Ví dụ: Hoàn Kiếm"
                       />
-                      {errors.district && (
+                      {addressErrors.district && (
                         <p className="mt-1 text-xs text-red-600">
-                          {errors.district.message}
+                          {addressErrors.district.message}
                         </p>
                       )}
                     </div>
@@ -942,19 +969,19 @@ export default function CheckoutPage() {
                       </label>
                       <input
                         type="text"
-                        {...register("province", {
+                        {...registerAddress("province", {
                           required: "Tỉnh/Thành phố là bắt buộc",
                         })}
                         className={`w-full rounded border px-3 py-2 text-sm focus:outline-none ${
-                          errors.province
+                          addressErrors.province
                             ? "border-red-500 focus:border-red-600"
                             : "border-gray-300 focus:border-red-700"
                         }`}
                         placeholder="Ví dụ: Hà Nội"
                       />
-                      {errors.province && (
+                      {addressErrors.province && (
                         <p className="mt-1 text-xs text-red-600">
-                          {errors.province.message}
+                          {addressErrors.province.message}
                         </p>
                       )}
                     </div>

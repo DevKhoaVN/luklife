@@ -1,3 +1,4 @@
+
 // src/api/product.api.ts
 import apiClient from "./axios";
 
@@ -47,3 +48,51 @@ export const getProductBySlug = async (slug) => {
   const response = await apiClient.get(`/products/${slug}`);
   return response.data;
 };
+
+export const getAllProducts = async() => {
+  const response = await apiClient.get(`/products`);
+  return response.data;
+}
+
+
+// admin areas 
+
+export interface ProductVariant {
+  image_url: string;
+  color: string;
+  size: string;
+  sale_price: number;
+  stock_quantity: number;
+  is_active: boolean;
+}
+
+export interface Product {
+  id?: number | string; 
+  thumbnail: string;
+  name: string;
+  price: number;
+  discount_percentage: number;
+  description: string;
+  is_active: boolean;
+  is_featured: boolean;
+  category_ids: number[];
+  variants: ProductVariant[];
+}
+export const createProduct = async (productData : Product) => {
+  const response = await apiClient.post('/products/create', productData , {
+    headers: {
+      "Content-Type": "Multipart/Form-Data",
+    }
+  });
+  return response.data;
+}
+
+export const updateProduct = async ( productData: Product) => {
+  const response = await apiClient.put(`/products/${productData.id}`, productData);
+  return response.data;
+}
+
+export const deleteProduct = async (id: number | string) => {
+  const response = await apiClient.delete(`/products/${id}`);
+  return response.data;
+}

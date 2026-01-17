@@ -9,16 +9,30 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProfileIndexRouteImport } from './routes/profile/index'
+import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
 import { Route as CheckoutIndexRouteImport } from './routes/checkout/index'
 import { Route as CartIndexRouteImport } from './routes/cart/index'
 import { Route as SanPhamSlugRouteImport } from './routes/san-pham/$slug'
+import { Route as DashboardUnauthorizeRouteImport } from './routes/dashboard/unauthorize'
+import { Route as DashboardOverviewRouteImport } from './routes/dashboard/overview'
+import { Route as DashboardLoginRouteImport } from './routes/dashboard/login'
 import { Route as DanhMucSanPhamSlugRouteImport } from './routes/danh-muc-san-pham/$slug'
 import { Route as AuthRegisterRouteImport } from './routes/auth/register'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
 import { Route as AuthForgotPasswordRouteImport } from './routes/auth/forgot-password'
+import { Route as DashboardProductsIndexRouteImport } from './routes/dashboard/products/index'
+import { Route as CheckoutSuccessIndexRouteImport } from './routes/checkout/success/index'
+import { Route as DashboardProductsCreateRouteImport } from './routes/dashboard/products/create'
+import { Route as DashboardProductsEditIdRouteImport } from './routes/dashboard/products/edit.$id'
 
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -28,6 +42,11 @@ const ProfileIndexRoute = ProfileIndexRouteImport.update({
   id: '/profile/',
   path: '/profile/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardIndexRoute = DashboardIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboardRoute,
 } as any)
 const CheckoutIndexRoute = CheckoutIndexRouteImport.update({
   id: '/checkout/',
@@ -43,6 +62,21 @@ const SanPhamSlugRoute = SanPhamSlugRouteImport.update({
   id: '/san-pham/$slug',
   path: '/san-pham/$slug',
   getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardUnauthorizeRoute = DashboardUnauthorizeRouteImport.update({
+  id: '/unauthorize',
+  path: '/unauthorize',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardOverviewRoute = DashboardOverviewRouteImport.update({
+  id: '/overview',
+  path: '/overview',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardLoginRoute = DashboardLoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => DashboardRoute,
 } as any)
 const DanhMucSanPhamSlugRoute = DanhMucSanPhamSlugRouteImport.update({
   id: '/danh-muc-san-pham/$slug',
@@ -64,17 +98,46 @@ const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
   path: '/auth/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardProductsIndexRoute = DashboardProductsIndexRouteImport.update({
+  id: '/products/',
+  path: '/products/',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const CheckoutSuccessIndexRoute = CheckoutSuccessIndexRouteImport.update({
+  id: '/checkout/success/',
+  path: '/checkout/success/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardProductsCreateRoute = DashboardProductsCreateRouteImport.update({
+  id: '/products/create',
+  path: '/products/create',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardProductsEditIdRoute = DashboardProductsEditIdRouteImport.update({
+  id: '/products/edit/$id',
+  path: '/products/edit/$id',
+  getParentRoute: () => DashboardRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRouteWithChildren
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
   '/danh-muc-san-pham/$slug': typeof DanhMucSanPhamSlugRoute
+  '/dashboard/login': typeof DashboardLoginRoute
+  '/dashboard/overview': typeof DashboardOverviewRoute
+  '/dashboard/unauthorize': typeof DashboardUnauthorizeRoute
   '/san-pham/$slug': typeof SanPhamSlugRoute
   '/cart': typeof CartIndexRoute
   '/checkout': typeof CheckoutIndexRoute
+  '/dashboard/': typeof DashboardIndexRoute
   '/profile': typeof ProfileIndexRoute
+  '/dashboard/products/create': typeof DashboardProductsCreateRoute
+  '/checkout/success': typeof CheckoutSuccessIndexRoute
+  '/dashboard/products': typeof DashboardProductsIndexRoute
+  '/dashboard/products/edit/$id': typeof DashboardProductsEditIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -82,35 +145,61 @@ export interface FileRoutesByTo {
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
   '/danh-muc-san-pham/$slug': typeof DanhMucSanPhamSlugRoute
+  '/dashboard/login': typeof DashboardLoginRoute
+  '/dashboard/overview': typeof DashboardOverviewRoute
+  '/dashboard/unauthorize': typeof DashboardUnauthorizeRoute
   '/san-pham/$slug': typeof SanPhamSlugRoute
   '/cart': typeof CartIndexRoute
   '/checkout': typeof CheckoutIndexRoute
+  '/dashboard': typeof DashboardIndexRoute
   '/profile': typeof ProfileIndexRoute
+  '/dashboard/products/create': typeof DashboardProductsCreateRoute
+  '/checkout/success': typeof CheckoutSuccessIndexRoute
+  '/dashboard/products': typeof DashboardProductsIndexRoute
+  '/dashboard/products/edit/$id': typeof DashboardProductsEditIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRouteWithChildren
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
   '/danh-muc-san-pham/$slug': typeof DanhMucSanPhamSlugRoute
+  '/dashboard/login': typeof DashboardLoginRoute
+  '/dashboard/overview': typeof DashboardOverviewRoute
+  '/dashboard/unauthorize': typeof DashboardUnauthorizeRoute
   '/san-pham/$slug': typeof SanPhamSlugRoute
   '/cart/': typeof CartIndexRoute
   '/checkout/': typeof CheckoutIndexRoute
+  '/dashboard/': typeof DashboardIndexRoute
   '/profile/': typeof ProfileIndexRoute
+  '/dashboard/products/create': typeof DashboardProductsCreateRoute
+  '/checkout/success/': typeof CheckoutSuccessIndexRoute
+  '/dashboard/products/': typeof DashboardProductsIndexRoute
+  '/dashboard/products/edit/$id': typeof DashboardProductsEditIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/dashboard'
     | '/auth/forgot-password'
     | '/auth/login'
     | '/auth/register'
     | '/danh-muc-san-pham/$slug'
+    | '/dashboard/login'
+    | '/dashboard/overview'
+    | '/dashboard/unauthorize'
     | '/san-pham/$slug'
     | '/cart'
     | '/checkout'
+    | '/dashboard/'
     | '/profile'
+    | '/dashboard/products/create'
+    | '/checkout/success'
+    | '/dashboard/products'
+    | '/dashboard/products/edit/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -118,25 +207,43 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/auth/register'
     | '/danh-muc-san-pham/$slug'
+    | '/dashboard/login'
+    | '/dashboard/overview'
+    | '/dashboard/unauthorize'
     | '/san-pham/$slug'
     | '/cart'
     | '/checkout'
+    | '/dashboard'
     | '/profile'
+    | '/dashboard/products/create'
+    | '/checkout/success'
+    | '/dashboard/products'
+    | '/dashboard/products/edit/$id'
   id:
     | '__root__'
     | '/'
+    | '/dashboard'
     | '/auth/forgot-password'
     | '/auth/login'
     | '/auth/register'
     | '/danh-muc-san-pham/$slug'
+    | '/dashboard/login'
+    | '/dashboard/overview'
+    | '/dashboard/unauthorize'
     | '/san-pham/$slug'
     | '/cart/'
     | '/checkout/'
+    | '/dashboard/'
     | '/profile/'
+    | '/dashboard/products/create'
+    | '/checkout/success/'
+    | '/dashboard/products/'
+    | '/dashboard/products/edit/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DashboardRoute: typeof DashboardRouteWithChildren
   AuthForgotPasswordRoute: typeof AuthForgotPasswordRoute
   AuthLoginRoute: typeof AuthLoginRoute
   AuthRegisterRoute: typeof AuthRegisterRoute
@@ -145,10 +252,18 @@ export interface RootRouteChildren {
   CartIndexRoute: typeof CartIndexRoute
   CheckoutIndexRoute: typeof CheckoutIndexRoute
   ProfileIndexRoute: typeof ProfileIndexRoute
+  CheckoutSuccessIndexRoute: typeof CheckoutSuccessIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -162,6 +277,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/profile'
       preLoaderRoute: typeof ProfileIndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/': {
+      id: '/dashboard/'
+      path: '/'
+      fullPath: '/dashboard/'
+      preLoaderRoute: typeof DashboardIndexRouteImport
+      parentRoute: typeof DashboardRoute
     }
     '/checkout/': {
       id: '/checkout/'
@@ -183,6 +305,27 @@ declare module '@tanstack/react-router' {
       fullPath: '/san-pham/$slug'
       preLoaderRoute: typeof SanPhamSlugRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/unauthorize': {
+      id: '/dashboard/unauthorize'
+      path: '/unauthorize'
+      fullPath: '/dashboard/unauthorize'
+      preLoaderRoute: typeof DashboardUnauthorizeRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/overview': {
+      id: '/dashboard/overview'
+      path: '/overview'
+      fullPath: '/dashboard/overview'
+      preLoaderRoute: typeof DashboardOverviewRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/login': {
+      id: '/dashboard/login'
+      path: '/login'
+      fullPath: '/dashboard/login'
+      preLoaderRoute: typeof DashboardLoginRouteImport
+      parentRoute: typeof DashboardRoute
     }
     '/danh-muc-san-pham/$slug': {
       id: '/danh-muc-san-pham/$slug'
@@ -212,11 +355,64 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard/products/': {
+      id: '/dashboard/products/'
+      path: '/products'
+      fullPath: '/dashboard/products'
+      preLoaderRoute: typeof DashboardProductsIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/checkout/success/': {
+      id: '/checkout/success/'
+      path: '/checkout/success'
+      fullPath: '/checkout/success'
+      preLoaderRoute: typeof CheckoutSuccessIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/products/create': {
+      id: '/dashboard/products/create'
+      path: '/products/create'
+      fullPath: '/dashboard/products/create'
+      preLoaderRoute: typeof DashboardProductsCreateRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/products/edit/$id': {
+      id: '/dashboard/products/edit/$id'
+      path: '/products/edit/$id'
+      fullPath: '/dashboard/products/edit/$id'
+      preLoaderRoute: typeof DashboardProductsEditIdRouteImport
+      parentRoute: typeof DashboardRoute
+    }
   }
 }
 
+interface DashboardRouteChildren {
+  DashboardLoginRoute: typeof DashboardLoginRoute
+  DashboardOverviewRoute: typeof DashboardOverviewRoute
+  DashboardUnauthorizeRoute: typeof DashboardUnauthorizeRoute
+  DashboardIndexRoute: typeof DashboardIndexRoute
+  DashboardProductsCreateRoute: typeof DashboardProductsCreateRoute
+  DashboardProductsIndexRoute: typeof DashboardProductsIndexRoute
+  DashboardProductsEditIdRoute: typeof DashboardProductsEditIdRoute
+}
+
+const DashboardRouteChildren: DashboardRouteChildren = {
+  DashboardLoginRoute: DashboardLoginRoute,
+  DashboardOverviewRoute: DashboardOverviewRoute,
+  DashboardUnauthorizeRoute: DashboardUnauthorizeRoute,
+  DashboardIndexRoute: DashboardIndexRoute,
+  DashboardProductsCreateRoute: DashboardProductsCreateRoute,
+  DashboardProductsIndexRoute: DashboardProductsIndexRoute,
+  DashboardProductsEditIdRoute: DashboardProductsEditIdRoute,
+}
+
+const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
+  DashboardRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DashboardRoute: DashboardRouteWithChildren,
   AuthForgotPasswordRoute: AuthForgotPasswordRoute,
   AuthLoginRoute: AuthLoginRoute,
   AuthRegisterRoute: AuthRegisterRoute,
@@ -225,6 +421,7 @@ const rootRouteChildren: RootRouteChildren = {
   CartIndexRoute: CartIndexRoute,
   CheckoutIndexRoute: CheckoutIndexRoute,
   ProfileIndexRoute: ProfileIndexRoute,
+  CheckoutSuccessIndexRoute: CheckoutSuccessIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

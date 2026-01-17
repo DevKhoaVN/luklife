@@ -2,7 +2,7 @@ import { type  CheckoutData } from './../../api/checkout.api';
 import { useMutation } from "@tanstack/react-query";
 import { checkout } from "../../api/checkout.api";
 
-export const useApplyDiscount = () => {
+export const useCheckout = () => {
 
   return useMutation({
     mutationFn: (data: CheckoutData ) => checkout(data),

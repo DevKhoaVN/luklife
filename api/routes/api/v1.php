@@ -1,11 +1,13 @@
 <?php
 
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\v1\Auth\AuthController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\v1\Admin\CategoriesController ;
 use App\Http\Controllers\v1\Products\ProductController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\v1\Admin\AdminController;
 use App\Http\Controllers\v1\Admin\DiscountController;
 use App\Http\Controllers\v1\Auth\UserController;
 
@@ -44,6 +46,7 @@ Route::prefix('products')->group(function () {
     Route::post('create', [ProductController::class, 'create']);
     Route::delete('{id}', [ProductController::class, 'delete']);
 });
+
 
 
 Route::prefix('cart')->group(function () {
@@ -87,4 +90,12 @@ Route::post('/checkout', [CheckoutController::class, 'checkout']);
 Route::prefix('vnpay')->group(function () {
     Route::get('/callback', [CheckoutController::class, 'vnpayCallback']);
     Route::get('/ipn', [CheckoutController::class, 'vnpayIPN']);
+});
+
+Route::prefix('admin')->group(function () {
+    Route::get('/static', [AdminController::class, 'dashboardStats']);
+});
+
+Route::prefix('orders')->group(function () {
+    Route::get('/', [OrderController::class, 'getAllOrders']);
 });

@@ -5,7 +5,7 @@ import { routeTree } from "./routeTree.gen";
 import { createRouter, RouterProvider } from "@tanstack/react-router";
 import { AppContextProvider } from "./context/AppContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ToastContainer } from "react-toastify";
+import { ToastContainer, Slide } from "react-toastify";
 // Tạo QueryClient instance
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -20,7 +20,12 @@ const queryClient = new QueryClient({
   },
 });
 
-const router = createRouter({ routeTree });
+const router = createRouter({
+  routeTree,
+  context: {
+    auth: undefined,
+  },
+});
 
 declare module "@tanstack/react-router" {
   interface Register {
@@ -31,9 +36,28 @@ declare module "@tanstack/react-router" {
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <AppContextProvider>
+      <AppContextProvider router={router}>
         <RouterProvider router={router} />
-        <ToastContainer />
+        <ToastContainer
+          position="top-right"
+          autoClose={500}
+          hideProgressBar={true} // ✅ Ẩn thanh progress bar
+          newestOnTop
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss={false} // ✅ Tắt để mượt hơn
+          draggable
+          pauseOnHover
+          theme="light"
+          transition={Slide}
+          limit={3}
+          stacked
+          closeButton={false} // ✅ Ẩn nút close (X)
+          style={{
+            fontSize: "13px",
+            width: "300px",
+          }}
+        />
       </AppContextProvider>
     </QueryClientProvider>
   </StrictMode>

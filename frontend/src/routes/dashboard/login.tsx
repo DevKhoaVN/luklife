@@ -1,12 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Eye, EyeOff } from "lucide-react";
 import { useForm } from "react-hook-form";
-import React, { useContext, useState } from "react";
-
+import { useContext, useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import AppContext from "../../context/AppContext";
 
-export const Route = createFileRoute("/auth/login")({
+export const Route = createFileRoute("/dashboard/login")({
   component: LoginForm,
 });
 
@@ -15,10 +14,9 @@ function LoginForm() {
   const { setUser } = useContext(AppContext);
   const navigate = useNavigate();
 
-  // State password
+  const search = Route.useSearch() as { redirect?: string };
   const [showPassword, setShowPassword] = useState(false);
 
-  // Function xem password
   const togglePasswordVisibility = () => {
     setShowPassword((prev) => !prev);
   };
@@ -33,9 +31,19 @@ function LoginForm() {
     try {
       const result = await loginAsync(data);
 
+      // Cập nhật user trong context (sẽ tự động trigger router update)
       setUser(result.user);
 
-      navigate({ to: "/" });
+      // Navigate đến trang đích
+      const redirectTo = search.redirect || "/dashboard/";
+
+      // Sử dụng setTimeout để đảm bảo context đã update
+      setTimeout(() => {
+        navigate({
+          to: redirectTo,
+          replace: true,
+        });
+      }, 100);
     } catch (err) {
       console.error("Login thất bại:", err);
     }
@@ -47,12 +55,12 @@ function LoginForm() {
         <header className="mb-6 text-center">
           <h2 className="text-2xl font-bold text-gray-800">Đăng nhập</h2>
           <p className="text-sm text-gray-500 mt-1">
-            Đăng nhập và Tận hưởng ưu đãi Thành viên
+            Bạn đang đăng nhập vào trang quản lí LukLife
           </p>
         </header>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          {/* Trường Email */}
+          {/* Email field */}
           <div>
             <label
               htmlFor="email"
@@ -80,7 +88,7 @@ function LoginForm() {
             )}
           </div>
 
-          {/* Trường Mật khẩu */}
+          {/* Password field */}
           <div>
             <label
               htmlFor="password"
@@ -116,7 +124,7 @@ function LoginForm() {
             )}
           </div>
 
-          {/* Hành động phụ */}
+          {/* Remember me & Forgot password */}
           <div className="flex justify-between items-center text-sm">
             <div className="flex items-center">
               <input
@@ -137,7 +145,7 @@ function LoginForm() {
             </Link>
           </div>
 
-          {/* Hiển thị lỗi từ API */}
+          {/* Error message */}
           {loginError && (
             <div className="p-3 bg-red-50 border border-red-200 rounded-md">
               <p className="text-sm text-red-600">
@@ -146,7 +154,7 @@ function LoginForm() {
             </div>
           )}
 
-          {/* Nút Đăng nhập */}
+          {/* Submit button */}
           <button
             type="submit"
             disabled={isSubmitting || isLoginLoading}
@@ -155,20 +163,7 @@ function LoginForm() {
             {isSubmitting || isLoginLoading ? "Đang đăng nhập..." : "Đăng nhập"}
           </button>
         </form>
-
-        {/* Link chuyển sang Đăng ký */}
-        <p className="text-center text-sm mt-4 text-gray-600">
-          Chưa có tài khoản?
-          <Link
-            to="/auth/register"
-            className="text-red-600 hover:text-red-700 font-bold ml-1"
-          >
-            Đăng ký ngay
-          </Link>
-        </p>
       </div>
     </div>
   );
 }
-
-export default LoginForm;

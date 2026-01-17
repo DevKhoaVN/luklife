@@ -10,46 +10,122 @@ use App\Repositories\Contracts\CategoriesRepositoriesInterface;
 use Illuminate\Database\Eloquent\Builder;
 use  Illuminate\Support\Facades\DB;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Cloudinary\Cloudinary;
 use Exception;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Log;
 
 class ProductService
 {
 
-    public function __construct(protected ProductRepositoriesInterface $productRepo, protected CategoriesRepositoriesInterface $cateRepo){}
+    private $cloudinary;
+    public function __construct(protected ProductRepositoriesInterface $productRepo, protected CategoriesRepositoriesInterface $cateRepo){
+        $this->cloudinary = new Cloudinary([
+            'cloud' => [
+                'cloud_name' => config('services.cloudinary.cloud_name'),
+                'api_key' => config('services.cloudinary.api_key'),
+                'api_secret' => config('services.cloudinary.api_secret'),
+            ]
+        ]);
+    }
 
+    /**
+     * Validate uploaded image
+     */
+    private function validateImage(UploadedFile $file)
+    {
+        if ($file->getError() !== UPLOAD_ERR_OK) {
+            throw new Exception('File upload error: ' . $file->getErrorMessage());
+        }
+
+        $allowedMimes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/webp'];
+        if (!in_array($file->getMimeType(), $allowedMimes)) {
+            throw new Exception('Invalid file type. Only JPEG, PNG, JPG, GIF, WEBP allowed.');
+        }
+
+        $maxSize = 5 * 1024 * 1024; // 5MB
+        if ($file->getSize() > $maxSize) {
+            throw new Exception('File size must be less than 5MB. Current: ' . round($file->getSize() / 1024 / 1024, 2) . 'MB');
+        }
+
+        return true;
+    }
     public function createProduct(array $data)
     {
+
         DB::beginTransaction();
-
         try {
-
+            // 1. Khởi tạo mảng dữ liệu sản phẩm (Chưa gán thumbnail ngay)
             $productAttri = [
-                'thumbnail' => $data['thumbnail'],
                 'name' => $data['name'],
                 'price' => $data['price'],
                 'discount_percentage' => $data['discount_percentage'] ?? 0,
                 'description' => $data['description'] ?? null,
                 'is_active' => 1,
-                "is_featured" => $data['descris_featurediption'] ?? false,
+                'is_featured' => $data['is_featured'] ?? false, // Sửa lỗi chính tả key của bạn
             ];
+          
+            // 2. Xử lý upload Thumbnail Sản phẩm chính
+            if (isset($data['thumbnail']) && $data['thumbnail'] instanceof UploadedFile) {
+                $file = $data['thumbnail'];
+                $this->validateImage($file);
 
+                $uploadResult = $this->cloudinary->uploadApi()->upload(
+                    $file->getRealPath(),
+                    ['folder' => 'products', 'resource_type' => 'image', 'overwrite' => true]
+                );
+
+                // Gán URL và ID sau khi upload thành công vào mảng attributes
+                $productAttri['thumbnail'] = $uploadResult['secure_url'];
+
+           
+                $productAttri['thumbnail_public_id'] = $uploadResult['public_id'];
+            }
+
+            // 3. Tạo sản phẩm (Lúc này $productAttri chỉ chứa các chuỗi/số, không còn Object File)
             $product = $this->productRepo->create($productAttri);
-            
 
+            // 4. Gắn danh mục
             if (!empty($data['category_ids'])) {
                 $product->categories()->attach($data['category_ids']);
             }
 
+            // 5. Xử lý Biến thể (Variants)
             if (!empty($data['variants'])) {
                 foreach ($data['variants'] as $variantData) {
                     $variantData['product_id'] = $product->id;
                     $variantData['sku'] = CodeGenerator::geneerateSku();
+
+                    // Kiểm tra xem image_url gửi lên có phải là FILE thật không
+                    if (isset($variantData['image_url']) ) {
+                        $file = $variantData['image_url'];
+
+                        // Chỉ thực hiện upload nếu đúng là file
+                        if ($file instanceof \Illuminate\Http\UploadedFile) {
+                            $this->validateImage($file);
+                            $uploadResult = $this->cloudinary->uploadApi()->upload($file->getRealPath(), [
+                                'folder' => 'variants'
+                            ]);
+
+                            // Gán lại là chuỗi URL (String)
+                            $variantData['image_url'] = $uploadResult['secure_url'];
+                        }
+                    } else {
+                        // Nếu không có file gửi lên, đảm bảo nó là null để không lỗi "Array to string"
+                        $variantData['image_url'] = null;
+                    }
+
+                    // Quan trọng: Nếu variantData vẫn còn chứa image_url dưới dạng mảng/object rỗng
+                    // thì phải ép kiểu nó về null hoặc string rỗng
+                    if (is_array($variantData['image_url'])) {
+                        $variantData['image_url'] = null;
+                    }
+
                     $this->productRepo->createProductVariant($variantData);
                 }
             }
 
-             DB::commit();
-           
+            DB::commit();
 
             return [
                 'success' => true,
@@ -57,11 +133,11 @@ class ProductService
                 'data' => $product
             ];
         } catch (Exception $e) {
-
             DB::rollBack();
+            Log::error('Create Product Failed: ' . $e->getMessage());
             return [
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => 'Lỗi: ' . $e->getMessage()
             ];
         }
     }
@@ -292,6 +368,18 @@ class ProductService
               
             ];
        }
+    }
+
+    public function countProducts(){
+        try {
+            $count = $this->productRepo->countProducts();
+           return $count;
+        } catch (Exception $e) {
+            return [
+                'success' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
     }
 
 }

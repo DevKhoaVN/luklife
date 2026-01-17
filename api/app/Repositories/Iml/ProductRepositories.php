@@ -75,14 +75,8 @@ class ProductRepositories implements ProductRepositoriesInterface
     /**
      * Tạo sản phẩm mới
      */
-    public function create(array $data)
-    {
-        if (isset($data['image']) && $data['image'] instanceof UploadedFile) {
-            $path = Storage::putFile(self::IMAGE_PATH, $data['image']); // trả về path [web:120]
-            $data['thumbnail'] = str_replace('public/', '', $path);
-        }
-        
-        
+    public function create(array $data){
+    
         return $this->product::create($data);
     }
 
@@ -149,6 +143,10 @@ class ProductRepositories implements ProductRepositoriesInterface
 
     public function createProductVariant(array $data){
       return $this->product_variant::create($data);
+    }
+
+    public function countProducts(){
+        return $this->product->where('is_active', true)->count();
     }
 
 }

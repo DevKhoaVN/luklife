@@ -57,4 +57,6 @@ interface ProductRepositoriesInterface {
      */
     public function search(string $query, int $page);
 
+    public function countProducts();
+
 }

@@ -65,5 +65,8 @@ use Illuminate\Support\Facades\Hash;
     {
         return $this->user->where('id', $id)->first();
     }
+    public function countUsers(){
+        return $this->user->where('is_active', true)->count();
+    }
      
 }

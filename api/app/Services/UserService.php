@@ -403,4 +403,13 @@ class UserService
             ];
         }
     }
+
+    public function countUsers(){
+        try{
+            $count = $this->userRepo->countUsers();
+            return $count;
+        }catch(Exception $e){
+            return 0;
+        }
+    }
 }

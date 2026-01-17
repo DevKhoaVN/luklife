@@ -27,6 +27,12 @@ class ProductController extends Controller
 
     public function create(StoreProductRequest $request){
         $data = $request->validated();
+        return response()->json(
+            $request->all(),                // text fields có lên không?
+            $request->allFiles(),           // vẫn rỗng như cũ?
+            $request->file('thumbnail'),    // null hay UploadedFile?
+            $request->file('variants.0.image_url'),  // null?
+            $_FILES);
         $result = $this->productService->createProduct($data);
         return response()->json($result);
     }

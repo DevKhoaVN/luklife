@@ -10,11 +10,13 @@ use App\Repositories\Contracts\TokenRepositoriesInterface;
 use App\Repositories\Contracts\UserRepositoriesInterface;
 use App\Repositories\Contracts\CartRepositoriesInterface;
 use App\Repositories\Contracts\AddressRepositoriesInterface;
+use App\Repositories\Contracts\OrderRepositoriesInterface;
 use App\Repositories\Iml\CategoriesRepositories;
 use App\Repositories\Iml\ProductRepositories;
 use App\Repositories\Iml\TokenRepositories;
 use App\Repositories\Iml\UserRepository;
 use App\Repositories\Iml\AddressRepositories;
+use App\Repositories\Iml\OrderRepositories;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use App\Models\Product;
@@ -36,9 +38,9 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(ProductRepositoriesInterface::class, ProductRepositories::class);
         $this->app->bind(CartRepositoriesInterface::class, CartRepositories::class);
         $this->app->bind(AddressRepositoriesInterface::class, AddressRepositories::class);
+        $this->app->bind(OrderRepositoriesInterface::class, OrderRepositories::class);
         $this->app->bind(DiscountRepositoriesInterface::class, DiscountRepositories::class);
     }
-
     /**
      * Bootstrap any application services.
      */
