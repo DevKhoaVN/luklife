@@ -19,7 +19,8 @@ class ProductService
 {
 
     private $cloudinary;
-    public function __construct(protected ProductRepositoriesInterface $productRepo, protected CategoriesRepositoriesInterface $cateRepo){
+    public function __construct(protected ProductRepositoriesInterface $productRepo, protected CategoriesRepositoriesInterface $cateRepo)
+    {
         $this->cloudinary = new Cloudinary([
             'cloud' => [
                 'cloud_name' => config('services.cloudinary.cloud_name'),
@@ -64,7 +65,7 @@ class ProductService
                 'is_active' => 1,
                 'is_featured' => $data['is_featured'] ?? false, // Sửa lỗi chính tả key của bạn
             ];
-          
+
             // 2. Xử lý upload Thumbnail Sản phẩm chính
             if (isset($data['thumbnail']) && $data['thumbnail'] instanceof UploadedFile) {
                 $file = $data['thumbnail'];
@@ -78,7 +79,7 @@ class ProductService
                 // Gán URL và ID sau khi upload thành công vào mảng attributes
                 $productAttri['thumbnail'] = $uploadResult['secure_url'];
 
-           
+
                 $productAttri['thumbnail_public_id'] = $uploadResult['public_id'];
             }
 
@@ -94,10 +95,10 @@ class ProductService
             if (!empty($data['variants'])) {
                 foreach ($data['variants'] as $variantData) {
                     $variantData['product_id'] = $product->id;
-                    $variantData['sku'] = CodeGenerator::geneerateSku();
+                    $variantData['sku'] = CodeGenerator::generateSku();
 
                     // Kiểm tra xem image_url gửi lên có phải là FILE thật không
-                    if (isset($variantData['image_url']) ) {
+                    if (isset($variantData['image_url'])) {
                         $file = $variantData['image_url'];
 
                         // Chỉ thực hiện upload nếu đúng là file
@@ -144,7 +145,7 @@ class ProductService
 
     public function getProducts(array $filters)
     {
-        try{
+        try {
             $query = Product::query();
 
             // Tìm kiếm
@@ -162,13 +163,13 @@ class ProductService
             }
 
             if (!empty($filters['priceMax'])) {
-                
+
                 $query->where('price', '<=', (float) $filters['priceMax']);
             }
 
             // Lọc MÀU SẮC (qua variant)
             if (!empty($filters['color']) && strtolower(trim($filters['color'])) !== 'null') {
-        
+
                 $colorValue = trim($filters['color']);
                 $query->whereHas('productVariants', function ($q) use ($colorValue) {
                     $q->whereRaw('LOWER(color) = ?', [strtolower($colorValue)]);
@@ -229,8 +230,7 @@ class ProductService
                 'message' => "Tìm kiếm  sản phẩm thành công",
                 'data' => $result
             ];
-          
-        }catch(Exception $e) {
+        } catch (Exception $e) {
 
             return [
                 'success' => false,
@@ -262,7 +262,7 @@ class ProductService
                 'message' => "Không tìm thấy sản phẩm",
             ];
         } catch (\Exception $e) {
-           
+
 
             return [
                 'success' => false,
@@ -271,41 +271,89 @@ class ProductService
         }
     }
 
-    public function getProductByCategories(){
-
-    }
+    public function getProductByCategories() {}
 
     public function updateProduct(Product $product, array $data)
     {
         DB::beginTransaction();
 
         try {
-            // BƯỚC 1: Cập nhật thông tin cơ bản của Sản phẩm
+            // ---------------------------------------------------------
+            // 1. XỬ LÝ ẢNH THUMBNAIL (Bổ sung logic thiếu)
+            // ---------------------------------------------------------
+            if (isset($data['thumbnail']) && $data['thumbnail'] instanceof UploadedFile) {
+                // Upload ảnh mới
+                $file = $data['thumbnail'];
+                $this->validateImage($file);
+
+                $uploadResult = $this->cloudinary->uploadApi()->upload(
+                    $file->getRealPath(),
+                    ['folder' => 'products', 'resource_type' => 'image', 'overwrite' => true]
+                );
+
+                // Gán URL mới vào data để lưu
+                $data['thumbnail'] = $uploadResult['secure_url'];
+                // Có thể lưu thêm public_id nếu cần xóa ảnh cũ
+            } else {
+                // Nếu không gửi ảnh mới, xóa key thumbnail để giữ nguyên ảnh cũ
+                if (!isset($data['thumbnail'])) {
+                    unset($data['thumbnail']);
+                }
+            }
+
+            // ---------------------------------------------------------
+            // 2. XỬ LÝ ẢNH BIẾN THỂ (Bổ sung logic thiếu)
+            // ---------------------------------------------------------
+            if (isset($data['variants']) && is_array($data['variants'])) {
+                foreach ($data['variants'] as $key => $variant) {
+                    if (isset($variant['image_url']) && $variant['image_url'] instanceof UploadedFile) {
+                        $file = $variant['image_url'];
+                        $this->validateImage($file);
+
+                        $uploadResult = $this->cloudinary->uploadApi()->upload(
+                            $file->getRealPath(),
+                            ['folder' => 'variants']
+                        );
+                        // Cập nhật lại URL vào mảng data
+                        $data['variants'][$key]['image_url'] = $uploadResult['secure_url'];
+                    }
+                }
+            }
+
+            // ---------------------------------------------------------
+            // 3. TIẾN HÀNH UPDATE
+            // ---------------------------------------------------------
+
+            // Lọc bỏ các field không thuộc bảng products
             $productData = collect($data)->except(['variants', 'category_ids'])->toArray();
+
+            // Cập nhật Product
             $product->update($productData);
 
+            // Sync danh mục
             if (isset($data['category_ids'])) {
-                // Phương thức sync() xóa id không nằm trong list
                 $product->categories()->sync($data['category_ids']);
             }
 
+            // Sync biến thể (đã xử lý ảnh ở trên)
             if (isset($data['variants'])) {
                 $this->syncProductVariants($product, $data['variants']);
             }
 
             DB::commit();
 
-            $result =  $product->load(['categories:id,name,slug', 'productVariant']);
+            // Refresh lại data để trả về
+            $result = $product->refresh()->load(['categories:id,name,slug', 'productVariants']);
+
             return [
-                'sccuess' => false,
+                'success' => true,
                 'message' => 'Cập nhật sản phẩm thành công',
                 'data' => $result
             ];
         } catch (\Exception $e) {
-        
             DB::rollBack();
             return [
-                'sccuess' => false,
+                'success' => false,
                 'message' => $e->getMessage(),
             ];
         }
@@ -328,18 +376,17 @@ class ProductService
             if ($variantId && in_array($variantId, $currentVariantIds)) {
                 // case 1: variant tồn tại , tiến hành update
                 $variant = ProductVariant::find($variantId);
-             
+
                 if ($variant) {
                     $variant->updateOrCreate(
-                      ['id' =>  $variantId ],
+                        ['id' =>  $variantId],
                         $variantAttributes
                     );
                     $incomingVariantIds[] = $variantId; // Đánh dấu variant này đã được xử lý
                 }
-
-            
             } else {
                 // case 2: variant chưa tồn tại , tạo mới
+                $variantAttributes['sku'] = CodeGenerator::generateSku();
                 $newVariant = $product->product_variants()->create($variantAttributes);
                 $incomingVariantIds[] = $newVariant->id; // Lưu ID variant mới
             }
@@ -354,26 +401,28 @@ class ProductService
         }
     }
 
-    public function deleteProduct(int $id){
-       try {
+    public function deleteProduct(int $id)
+    {
+        try {
             $result = $this->productRepo->delete($id);
             return [
-                'sccuess' => $result,
+                'success' => $result,
                 'message' => 'Xóa sản phẩm thành công',
             ];
-       }catch(Exception $e) {
+        } catch (Exception $e) {
             return [
-                'sccuess' => false,
+                'success' => false,
                 'message' => $e->getMessage(),
-              
+
             ];
-       }
+        }
     }
 
-    public function countProducts(){
+    public function countProducts()
+    {
         try {
             $count = $this->productRepo->countProducts();
-           return $count;
+            return $count;
         } catch (Exception $e) {
             return [
                 'success' => false,
@@ -381,7 +430,4 @@ class ProductService
             ];
         }
     }
-
 }
-    
-

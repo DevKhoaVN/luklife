@@ -12,7 +12,7 @@ use App\Services\AuthService;
 use App\Services\ProductService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-
+use App\Http\Requests\UpdateProductRequest;
 use function Symfony\Component\Translation\t;
 
 class ProductController extends Controller
@@ -62,7 +62,7 @@ class ProductController extends Controller
         return response()->json($reuslt);
     }
 
-    public function update(StoreProductRequest $request,  $id)
+    public function update(UpdateProductRequest $request,  $id)
     {
 
         $product = Product::findOrFail($id);
