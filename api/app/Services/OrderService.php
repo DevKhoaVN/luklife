@@ -59,10 +59,10 @@ class OrderService
     /**
      * Get all orders with pagination
      */
-    public function getAllOrders(int $perPage = 10)
+    public function getAllOrders(int $perPage = 10, string $status)
     {
         try {
-            $orders = $this->orderRepo->all($perPage);
+            $orders = $this->orderRepo->all ($status, $perPage);
 
             return [
                 'success' => true,
@@ -99,26 +99,15 @@ class OrderService
     /**
      * Get order detail
      */
-    public function getOrderDetail(int $orderId)
+    public function getOrderDetail(string $orderId)
     {
         try {
-            $order = $this->orderRepo->findById($orderId);
+            $order = $this->orderRepo->getOrderById($orderId);
 
             if (!$order) {
                 return [
                     'success' => false,
                     'message' => 'Không tìm thấy đơn hàng'
-                ];
-            }
-
-            // Kiểm tra quyền truy cập (user chỉ xem được đơn hàng của mình)
-            $userId = $this->getUserId();
-            $user = JWTAuth::parseToken()->authenticate();
-
-            if ($order->user_id !== $userId && !$user->is_admin) {
-                return [
-                    'success' => false,
-                    'message' => 'Bạn không có quyền xem đơn hàng này'
                 ];
             }
 
@@ -209,32 +198,18 @@ class OrderService
         }
     }
 
-     public function updateStatus(int $orderId, array $data)
+     public function updateStatus(string $orderId, array $data)
     {
         try {
-            $userId = $this->getUserId();
-            $order = $this->orderRepo->findById($orderId);
+         
+            $order = $this->orderRepo->update($orderId, $data);
 
-            if (!$order) {
-                return [
-                    'success' => false,
-                    'message' => 'Không tìm thấy đơn hàng'
-                ];
-            }
-
-            // Kiểm tra quyền cập nhật trạng thái (admin hoặc người tạo đơn)
-            $user = JWTAuth::parseToken()->authenticate();
-
-
-            // Kiểm tra trạng thái đơn hàng
             if ($order->order_status === 'cancelled') {
                 return [
                     'success' => false,
                     'message' => 'Không thể cập nhật trạng thái cho đơn hàng đã hủy'
                 ];
             }
-
-            $order = $this->orderRepo->update($orderId, $data);
 
             return [
                 'success' => true,

@@ -11,11 +11,29 @@ class OrderRepositories implements OrderRepositoriesInterface
     /**
      * Get all orders
      */
-    public function all(int $perPage = 10)
+    public function all(string $status = 'all', int $perPage = 10)
     {
-        return Orders::orderBy('created_at', 'desc')->paginate($perPage);
-    }
-    /**
+        $query = Orders::query()
+            ->orderBy('created_at', 'desc');
+
+        // Debug SQL trước khi lọc
+        // dd($query->toSql(), $query->getBindings());  // Uncomment để xem
+
+        // Lọc status
+        if ($status !== 'all' && $status !== '') {
+            $query->where('order_status', $status);
+        }
+
+        // Debug sau khi lọc
+        // dd($query->toSql(), $query->getBindings());
+
+        $paginated = $query->paginate($perPage)->withQueryString();
+
+        // Debug kết quả phân trang
+        // dd($paginated->items(), $paginated->total());
+
+        return $paginated;
+    }    /**
      * Create new order
      */
     public function create(int $userId, array $data)
@@ -59,13 +77,9 @@ class OrderRepositories implements OrderRepositoriesInterface
     /**
      * Update order
      */
-    public function update(int $orderId, array $data)
+    public function update(string $orderId, array $data)
     {
-        $order = $this->findById($orderId);
-
-        if (!$order) {
-            return null;
-        }
+        $order = Orders::where('id', $orderId)->firstOrFail();
 
         $order->update($data);
 
@@ -108,5 +122,22 @@ class OrderRepositories implements OrderRepositoriesInterface
 
     public function countRevenue(){
         return Orders::where('order_status', 'delivered')->sum('grand_total');
+    }
+
+    public function getOrderById(string $orderId)
+    {
+        return Orders::with([
+            // 1. Lấy danh sách item trong đơn hàng
+            // 2. Trong mỗi item lấy thông tin biến thể (màu, size, sku...)
+            // 3. Từ biến thể lấy ngược lên thông tin sản phẩm gốc (tên sp, mô tả...)
+            'orderItems.variant.product',
+
+            // Lấy thêm thông tin người dùng và địa chỉ nếu cần cho UI
+            'user',
+            'discount'
+        ])
+            ->where('order_code', $orderId) // Hoặc dùng findOrFail($orderId) nếu truyền ID số
+            // ->where('order_code', $orderId) // Dùng cái này nếu bạn truyền mã ORD...
+            ->firstOrFail();
     }
 }

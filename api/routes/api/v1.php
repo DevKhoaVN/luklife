@@ -101,4 +101,6 @@ Route::prefix('admin')->group(function () {
 
 Route::prefix('orders')->group(function () {
     Route::get('/', [OrderController::class, 'getAllOrders']);
+    Route::get('/{orderId}', [OrderController::class, 'getOrderByOrderId']);
+    Route::put('/{orderId}', [OrderController::class, 'updateStatusOrder']);
 });

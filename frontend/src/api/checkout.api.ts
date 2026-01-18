@@ -25,7 +25,7 @@ export const getOrderByTxnRef = async (txnRef: string) => {
 };
 
 // Get order by order_code
-export const getOrderByCode = async (orderCode: string)=> {
+export const getOrderByCode = async (orderCode: string | undefined)=> {
   const response = await apiClient.get(`/orders/${orderCode}`);
   return response.data;
 };

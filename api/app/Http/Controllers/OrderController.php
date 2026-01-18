@@ -31,8 +31,9 @@ class OrderController extends Controller
      */
     public function getAllOrders(Request $request)
     {
-        $perPage = $request->get('per_page', 10);
-        $result = $this->orderService->getAllOrders($perPage);
+        $status = $request->input('status', 'all');
+
+        $result = $this->orderService->getAllOrders(10, $status);
         
         return response()->json($result, $result['success'] ? 200 : 400);
     }
@@ -83,12 +84,10 @@ class OrderController extends Controller
     /**
      * Cập nhật trạng thái đơn hàng (Admin)
      */
-    public function updateStatusOrder(Request $request)
+    public function updateStatusOrder(string $orderId, Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'order_id' => 'required',
+        $validator = Validator::make($request->all(), [ 
             'order_status' => 'sometimes|in:pending,confirmed,processing,shipping,delivered,cancelled,returned',
-            'cancelled_reason' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
@@ -99,7 +98,7 @@ class OrderController extends Controller
             ], 422);
         }
 
-        $result = $this->orderService->updateStatus($request->order_id, $request->all());
+        $result = $this->orderService->updateStatus($orderId, $request->all());
         
         return response()->json($result, $result['success'] ? 200 : 400);
     }
@@ -164,7 +163,7 @@ class OrderController extends Controller
 
 
     
-    public function getOrderByOrderId(int $orderId)
+    public function getOrderByOrderId(string $orderId)
      {
         $result = $this->orderService->getOrderDetail($orderId);
 

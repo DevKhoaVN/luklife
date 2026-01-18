@@ -75,43 +75,15 @@ export function Sidebar({ currentUser, onLogout, statsData, isOpen }) {
           id: "orders-all",
           label: "Tất cả đơn hàng",
           icon: FileText,
-          count: statsData?.data?.total_orders?.toString() || "0",
+
           path: "/dashboard/orders",
         },
         {
           id: "orders-pending",
-          label: "Chờ xử lý",
+          label: "Sản phẩm đơn hàng",
           icon: Clock,
-          count:
-            statsData?.data?.by_order_status?.pending?.count?.toString() || "0",
-          path: "/dashboard/orders/pending",
-        },
-        {
-          id: "orders-processing",
-          label: "Đang xử lý",
-          icon: TrendingUp,
-          count:
-            statsData?.data?.by_order_status?.processing?.count?.toString() ||
-            "0",
-          path: "/dashboard/orders/processing",
-        },
-        {
-          id: "orders-completed",
-          label: "Hoàn thành",
-          icon: CheckCircle2,
-          count:
-            statsData?.data?.by_order_status?.delivered?.count?.toString() ||
-            "0",
-          path: "/dashboard/orders/completed",
-        },
-        {
-          id: "orders-cancelled",
-          label: "Đã hủy",
-          icon: AlertCircle,
-          count:
-            statsData?.data?.by_order_status?.cancelled?.count?.toString() ||
-            "0",
-          path: "/dashboard/orders/cancelled",
+
+          path: "/dashboard/orders/checking",
         },
       ],
     },
@@ -144,8 +116,8 @@ export function Sidebar({ currentUser, onLogout, statsData, isOpen }) {
       path: "/dashboard/customers",
     },
     {
-      id: "analytics",
-      label: "Thống kê",
+      id: "stock",
+      label: "Tồn kho",
       icon: BarChart3,
       badge: null,
       path: "/dashboard/analytics",

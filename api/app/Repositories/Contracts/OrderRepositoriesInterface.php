@@ -6,6 +6,7 @@ namespace App\Repositories\Contracts;
 interface OrderRepositoriesInterface
 {
 
+   public function getOrderById(string $orderId);
     public function countRevenue();
     
     public function countOrders();
@@ -13,7 +14,7 @@ interface OrderRepositoriesInterface
   
     public function findByUserId(int $userId, int $perPage = 10);
 
-    public function all(int $perPage = 10);
+    public function all(string $status, int $perPage = 10);
     /**
      * Create a new order
      */
@@ -27,7 +28,7 @@ interface OrderRepositoriesInterface
     /**
      * Update order
      */
-    public function update(int $orderId, array $data);
+    public function update(string $orderId, array $data);
 
     /**
      * Delete order
