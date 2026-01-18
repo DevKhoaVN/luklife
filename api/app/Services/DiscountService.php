@@ -39,20 +39,19 @@ class DiscountService
 
     public function createDiscount(array $data)
     {
-      try{
-          $reusult =  $this->discountRepository->create($data);
-          return [
-            'success' => true,
-            'message' => 'Tạo  mã giảm giá thành công',
-            'data' => $reusult
-          ];
-      }catch(Exception $e){
-          return [
-            'success' => false,
-            'message' => $e->getMessage()
-          ];
-      }
-         
+        try {
+            $reusult =  $this->discountRepository->create($data);
+            return [
+                'success' => true,
+                'message' => 'Tạo  mã giảm giá thành công',
+                'data' => $reusult
+            ];
+        } catch (Exception $e) {
+            return [
+                'success' => false,
+                'message' => $e->getMessage()
+            ];
+        }
     }
 
     public function updateDiscount($id, array $data)
@@ -79,7 +78,7 @@ class DiscountService
             return [
                 'success' => true,
                 'message' => 'Xóa mã giảm giá thành công',
-               
+
             ];
         } catch (Exception $e) {
             return [
@@ -87,7 +86,6 @@ class DiscountService
                 'message' => $e->getMessage()
             ];
         }
-        
     }
 
     public function searchDiscounts($keyword)
@@ -98,14 +96,13 @@ class DiscountService
                 'success' => true,
                 'message' => 'Tìm kiếm mã giảm giá thành công',
                 'data' => $reusult
-            ];  
+            ];
         } catch (Exception $e) {
             return [
                 'success' => false,
                 'message' => $e->getMessage()
             ];
         }
-        
     }
 
     /**
@@ -125,10 +122,10 @@ class DiscountService
             throw new Exception('Mã giảm giá không tồn tại!');
         }
 
-            // Kiểm tra tính hợp lệ
-            if (!$discount->is_active) {
-                throw new Exception('Mã giảm giá không còn hiệu lực!');
-            }
+        // Kiểm tra tính hợp lệ
+        if (!$discount->is_active) {
+            throw new Exception('Mã giảm giá không còn hiệu lực!');
+        }
 
         // Kiểm tra giá trị đơn hàng tối thiểu
         if ($orderValue < $discount->min_order_value) {
@@ -190,5 +187,31 @@ class DiscountService
         $discount = $this->discountRepository->find($id);
         $discount->update(['is_active' => !$discount->is_active]);
         return $discount->fresh();
+    }
+
+    public function applyCoupon($code, $totalAmount)
+    {
+
+        $coupon = Discount::where('code', $code)->first();
+
+        if (!$coupon) {
+            throw new Exception("Mã giảm giá '{$code}' không tồn tại.");
+        }
+
+        if (!$coupon->isValid()) {
+            throw new Exception("Mã giảm giá không hợp lệ hoặc đã hết hạn.");
+        }
+
+        if ($coupon->min_order_value && $totalAmount < $coupon->min_order_value) {
+            throw new Exception("Đơn hàng phải từ " . number_format($coupon->min_order_value) . "đ mới được dùng mã này.");
+        }
+
+        $discountAmount = $this->calculateDiscountAmount($coupon, $totalAmount);
+
+        return [
+            'discount_id' => $coupon->id,
+            'discount_amount' => $discountAmount,
+            'coupon_obj' => $coupon
+        ];
     }
 }

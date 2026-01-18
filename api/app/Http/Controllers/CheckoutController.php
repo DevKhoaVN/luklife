@@ -7,7 +7,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Orders;
 use App\Models\OrderItems;
-use App\Models\Discounts;
 use App\Services\VNPayService;
 use App\Http\Requests\CheckoutRequest;
 use App\Models\Discount;
@@ -29,10 +28,10 @@ class CheckoutController extends Controller
      */
     public function checkout(CheckoutRequest $request)
     {
-      
+
         $data = $request->validated();
 
-             DB::beginTransaction();
+        DB::beginTransaction();
         try {
             $totalAmount = 0;
             $discountAmount = 0;
@@ -113,7 +112,7 @@ class CheckoutController extends Controller
                     $ipAddress = $request->ip();
                     $paymentUrl = $this->vnpayService->createPaymentUrl($order, $ipAddress);
 
-          
+
                     return response()->json([
                         'success' => true,
                         'message' => 'Đơn hàng được tạo thành công. Chuyển hướng đến VNPay để thanh toán.',
