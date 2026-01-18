@@ -197,10 +197,13 @@ class DiscountService
         if (!$coupon) {
             throw new Exception("Mã giảm giá '{$code}' không tồn tại.");
         }
-
+        if ($coupon->usage_limit !== null && $coupon->used_count >= $coupon->usage_limit) {
+            throw new Exception("Mã giảm giá này đã hết lượt sử dụng.");
+        }
         if (!$coupon->isValid()) {
             throw new Exception("Mã giảm giá không hợp lệ hoặc đã hết hạn.");
         }
+
 
         if ($coupon->min_order_value && $totalAmount < $coupon->min_order_value) {
             throw new Exception("Đơn hàng phải từ " . number_format($coupon->min_order_value) . "đ mới được dùng mã này.");

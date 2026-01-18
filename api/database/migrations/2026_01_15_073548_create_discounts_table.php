@@ -28,7 +28,7 @@ return new class extends Migration
 
             // Giá trị giảm tối đa (cho loại percentage)
             $table->decimal('max_discount_value', 10, 2)->nullable();
-
+            $table->integer('used_count')->default(0);
             // Thời gian hiệu lực
             $table->timestamp('start_date')->nullable();
             $table->timestamp('end_date')->nullable();

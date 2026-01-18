@@ -5,9 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\ProductVariant;
 use App\Models\Orders;
+
 class OrderItems extends Model
 {
-    // protected $table = 'orderItems';
+    protected $table = 'orderitems';
 
     public $timestamps = false; // Vì bảng chỉ có created_at
 
