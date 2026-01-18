@@ -206,15 +206,22 @@ class ProductService
 
             $query->where('is_active', true);
 
-            // CHỈ load categories (để hiển thị tag/breadcrumb)
-            // KHÔNG load variants ở listing → tối ưu cực tốt
-            $query->with(['categories' => fn($q) => $q->select('categories.id', 'name', 'slug')]);
+            $query->with([
+                'categories' => fn($q) => $q->select('categories.id', 'name', 'slug'),
+                'productVariants' => function ($q) {
+                    // Bạn có thể chọn các field cần thiết của variant ở đây
+                    $q->select('id', 'product_id', 'color', 'size', 'sale_price', 'stock_quantity', 'image_url')
+                        ->where('is_active', true); // Chỉ lấy các variant đang kinh doanh
+                }
+            ]);
+            
 
             // Chỉ select những field cần thiết cho listing
             $query->select([
                 'id',
                 'slug',
                 'name',
+                'description',
                 'thumbnail',
                 'price',
                 'discount_percentage',

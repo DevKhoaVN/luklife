@@ -10,7 +10,7 @@ use App\Models\CartItem;
 class ProductVariant extends Model
 {
 
-    protected $table = 'productvariant';
+    protected $table = 'product_variants';
     //
     protected $fillable = [
         'product_id',       // bắt buộc phải có, vì variant thuộc về product

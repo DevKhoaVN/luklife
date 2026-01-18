@@ -58,7 +58,7 @@ class UpdateProductRequest extends FormRequest
             'variants' => ['nullable', 'array'],
 
             // Validate ID của variant (để biết dòng nào update, dòng nào thêm mới)
-            'variants.*.id' => ['nullable', 'integer', 'exists:productvariant,id'],
+            'variants.*.id' => ['nullable', 'integer', 'exists:product_variants,id'],
             // Lưu ý: Tên bảng trong DB bạn là 'productvariant' (không 's')
 
             'variants.*.color'          => ['required_with:variants', 'string', 'max:100'],

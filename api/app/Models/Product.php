@@ -60,7 +60,7 @@ class Product extends Model
     {
         return $this->belongsToMany(
             Category::class,
-            'productcategories',
+            'product_categories', // Sửa từ 'productcategories' thành 'product_categories'
             'product_id',
             'category_id'
         );

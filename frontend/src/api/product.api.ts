@@ -88,7 +88,15 @@ export const createProduct = async (productData : Product) => {
 }
 
 export const updateProduct = async ( productData: Product) => {
-  const response = await apiClient.put(`/products/${productData.id}`, productData);
+  console.log("ID của sản phẩm là:", productData.id); 
+  
+
+  
+  const response = await apiClient.put(`/products/${productData.get('id')}`, productData, {
+    headers: {
+      "Content-Type": "Multipart/Form-Data",
+    }
+});
   return response.data;
 }
 
