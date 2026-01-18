@@ -67,6 +67,9 @@ Route::middleware('can')->group(function () {
         Route::delete('/address/{id}', [UserController::class, 'deleteAddress']);
         Route::patch('/address/{id}/set-default', [UserController::class, 'setAddressDefault']);
         Route::post('/reset-password', [UserController::class, 'resetPassword']);
+        Route::delete('/{id}', [UserController::class, 'deleteUser']);
+        Route::get('/', [UserController::class, 'getAllUsers']);
+        Route::put('/{id}', [UserController::class, 'updatePasswordByAdmin']);
     });
 });
 

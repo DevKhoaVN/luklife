@@ -8,7 +8,8 @@ interface UserRepositoriesInterface
     public function updateUser(int $id, array $data);
     public function findUserByEmail(string $email);
     public function findUserById(int $id);
-    public function updatePassword(int $id, string $newPassword): bool;
+    public function updatePassword(int $id, string $newPassword);
     public function countUsers() ;
+    public function  getAllUsers();
 
 }

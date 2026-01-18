@@ -25,21 +25,26 @@ use Illuminate\Support\Facades\Hash;
             ->orderBy('created_at', 'desc')
             ->get();
     }
-  public function deleteUser(int $id): bool
+  public function deleteUser(int $id)
   {
     $user = $this->user->findOrFail($id);
 
     // Soft delete bằng cách set is_active = false
-    return $user->update(['is_active' => false]);
+    return $user->update(['is_active' => 0]);
   }
 
-  public function updatePassword(int $id, string $newPassword): bool
+  public function updatePassword(int $id, string $newPassword)
   {
-    $user = $this->user->findOrFail($id);
+    // Tìm user theo ID, nếu không thấy sẽ văng ngoại lệ ModelNotFoundException (404)
+    $user = $this->user->find($id);
 
-    // Hash password và update
+    if (!$user) {
+      return false;
+    }
+
+    // Thực hiện update và trả về kết quả (true/false)
     return $user->update([
-      'password' => $newPassword
+      'password' => password_hash($newPassword, PASSWORD_BCRYPT, ['cost' => 12])
     ]);
   }
   public function updateUser(int $id, array $data){
@@ -51,12 +56,23 @@ use Illuminate\Support\Facades\Hash;
       $data['password'] = Hash::make($data['password']);
     }
 
-    // Chỉ update những field được truyền vào $data
-    // và nằm trong $fillable của model
-    $user->update($data);
+  }
+
+  public function updatPassword(int $id, string $password)
+  {
+    // Tìm user, nếu không thấy sẽ tự bắn lỗi 404
+    $user = $this->user->findOrFail($id);
+
+    // Kiểm tra nếu có password thì mới cập nhật
+    if ($password) {
+      $user->update([
+        'password' => password_hash($password, PASSWORD_BCRYPT)
+      ]);
+      return true;
+    }
 
     return $user->fresh();
-    }
+  }
     public function findUserByEmail(string $email)
     {
         return $this->user->where('email', $email)->first();
@@ -69,4 +85,10 @@ use Illuminate\Support\Facades\Hash;
         return $this->user->where('is_active', true)->count();
     }
      
+    public function getAllUsers()
+    {
+      return $this->user->where('is_active', true)->paginate(10);
+    }
+
+   
 }

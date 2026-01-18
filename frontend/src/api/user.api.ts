@@ -101,3 +101,16 @@ export const resetPassword = async (
   const response = await apiClient.post(`/user/reset-password`, { current_password, new_password });
   return response.data;
 };
+export const getAllUsers = async () => {
+  const response = await apiClient.get(`user`);
+ return response.data;
+}
+export const deleteUser = async (userId: number) => {
+  const response = await apiClient.delete(`user/${userId}`);
+  return response.data;
+}
+export const updatePasswordUserByAdmin = async (userId: number, newPassword: string) => {
+    const response = await apiClient.put(`/user/${userId}`, { password: newPassword });
+    return response.data;
+
+}

@@ -19,6 +19,7 @@ import { Route as SanPhamSlugRouteImport } from './routes/san-pham/$slug'
 import { Route as DashboardUnauthorizeRouteImport } from './routes/dashboard/unauthorize'
 import { Route as DashboardOverviewRouteImport } from './routes/dashboard/overview'
 import { Route as DashboardLoginRouteImport } from './routes/dashboard/login'
+import { Route as DashboardCustomersRouteImport } from './routes/dashboard/customers'
 import { Route as DanhMucSanPhamSlugRouteImport } from './routes/danh-muc-san-pham/$slug'
 import { Route as AuthRegisterRouteImport } from './routes/auth/register'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
@@ -78,6 +79,11 @@ const DashboardLoginRoute = DashboardLoginRouteImport.update({
   path: '/login',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardCustomersRoute = DashboardCustomersRouteImport.update({
+  id: '/customers',
+  path: '/customers',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DanhMucSanPhamSlugRoute = DanhMucSanPhamSlugRouteImport.update({
   id: '/danh-muc-san-pham/$slug',
   path: '/danh-muc-san-pham/$slug',
@@ -126,6 +132,7 @@ export interface FileRoutesByFullPath {
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
   '/danh-muc-san-pham/$slug': typeof DanhMucSanPhamSlugRoute
+  '/dashboard/customers': typeof DashboardCustomersRoute
   '/dashboard/login': typeof DashboardLoginRoute
   '/dashboard/overview': typeof DashboardOverviewRoute
   '/dashboard/unauthorize': typeof DashboardUnauthorizeRoute
@@ -145,6 +152,7 @@ export interface FileRoutesByTo {
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
   '/danh-muc-san-pham/$slug': typeof DanhMucSanPhamSlugRoute
+  '/dashboard/customers': typeof DashboardCustomersRoute
   '/dashboard/login': typeof DashboardLoginRoute
   '/dashboard/overview': typeof DashboardOverviewRoute
   '/dashboard/unauthorize': typeof DashboardUnauthorizeRoute
@@ -166,6 +174,7 @@ export interface FileRoutesById {
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
   '/danh-muc-san-pham/$slug': typeof DanhMucSanPhamSlugRoute
+  '/dashboard/customers': typeof DashboardCustomersRoute
   '/dashboard/login': typeof DashboardLoginRoute
   '/dashboard/overview': typeof DashboardOverviewRoute
   '/dashboard/unauthorize': typeof DashboardUnauthorizeRoute
@@ -188,6 +197,7 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/auth/register'
     | '/danh-muc-san-pham/$slug'
+    | '/dashboard/customers'
     | '/dashboard/login'
     | '/dashboard/overview'
     | '/dashboard/unauthorize'
@@ -207,6 +217,7 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/auth/register'
     | '/danh-muc-san-pham/$slug'
+    | '/dashboard/customers'
     | '/dashboard/login'
     | '/dashboard/overview'
     | '/dashboard/unauthorize'
@@ -227,6 +238,7 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/auth/register'
     | '/danh-muc-san-pham/$slug'
+    | '/dashboard/customers'
     | '/dashboard/login'
     | '/dashboard/overview'
     | '/dashboard/unauthorize'
@@ -327,6 +339,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardLoginRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/customers': {
+      id: '/dashboard/customers'
+      path: '/customers'
+      fullPath: '/dashboard/customers'
+      preLoaderRoute: typeof DashboardCustomersRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/danh-muc-san-pham/$slug': {
       id: '/danh-muc-san-pham/$slug'
       path: '/danh-muc-san-pham/$slug'
@@ -387,6 +406,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface DashboardRouteChildren {
+  DashboardCustomersRoute: typeof DashboardCustomersRoute
   DashboardLoginRoute: typeof DashboardLoginRoute
   DashboardOverviewRoute: typeof DashboardOverviewRoute
   DashboardUnauthorizeRoute: typeof DashboardUnauthorizeRoute
@@ -397,6 +417,7 @@ interface DashboardRouteChildren {
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
+  DashboardCustomersRoute: DashboardCustomersRoute,
   DashboardLoginRoute: DashboardLoginRoute,
   DashboardOverviewRoute: DashboardOverviewRoute,
   DashboardUnauthorizeRoute: DashboardUnauthorizeRoute,

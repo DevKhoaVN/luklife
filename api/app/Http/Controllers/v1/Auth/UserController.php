@@ -117,4 +117,27 @@ class UserController extends Controller
         $result = $this->userService->resetPassword($id, $currentPassword, $newPassword);
         return response()->json($result);
     }
+
+    public function getAllUsers(){
+        $result = $this->userService->getAllUsers();
+        return response()->json($result);
+    }
+
+    public function updatePasswordByAdmin(Request $request, $id){
+        // 1. Lấy password mới từ request body
+        $newPassword = $request->input('password');
+
+        // 2. Kiểm tra dữ liệu (Validation)
+        $request->validate([
+            'password' => 'required|min:6',
+        ]);
+        $result = $this->userService->updatePasswordByAdmin($id, $newPassword);
+        return response()->json($result);
+    }
+
+    public function deleteUser(Request $request, $id){
+        
+        $result = $this->userService->deleteUser($id);
+        return response()->json($result);
+    }
 }

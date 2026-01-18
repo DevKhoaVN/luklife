@@ -412,4 +412,63 @@ class UserService
             return 0;
         }
     }
+
+    public function getAllUsers(){
+        try{
+            $users = $this->userRepo->getAllUsers();
+            return [
+                'success' => true,
+                'message' => 'Lấy danh sách người dùng thành công',
+                'data' => $users
+            ];
+        }catch(Exception $e){
+            return [
+                'success' => false,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    public function deleteUser(int $id) {
+        try {
+            $result = $this->userRepo->deleteUser($id);
+            if ($result) {
+                return [
+                    'success' => true,
+                    'message' => 'Xóa người dùng thành công'
+                ];
+            } else {
+                return [
+                    'success' => false,
+                    'message' => 'Xóa người dùng thất bại'
+                ];
+            }
+        } catch (Exception $e) {
+            return [
+                'success' => false,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+public function updatePasswordByAdmin(int $id , string  $newPassword){
+        try {
+            $result = $this->userRepo->updatePassword($id, $newPassword);
+            if ($result) {
+                return [
+                    'success' => true,
+                    'message' => 'Cập nhật password  thành công'
+                ];
+            } else {
+                return [
+                    'success' => false,
+                    'message' => 'Cập nhật password thất bại'
+                ];
+            }
+        } catch (Exception $e) {
+            return [
+                'success' => false,
+                'message' => $e->getMessage()
+            ];
+        }
+}
 }

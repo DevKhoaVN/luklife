@@ -1,6 +1,5 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { updateProfile, getProfile, getAddresses, createAdddress, updateAddress, setIsDefaultAddress, resetPassword, deleteAddress } from "../api/user.api"; 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
+import { updateProfile, getProfile, getAddresses, createAdddress, updateAddress, setIsDefaultAddress, resetPassword, deleteAddress, deleteUser, getAllUsers, updatePasswordUserByAdmin } from "../api/user.api"; 
 
 export const useGetProfile = () => {
   return useQuery({
@@ -154,4 +153,40 @@ export const useResetPassword = () => {
       console.error("❌ Reset password error:", error.response?.data || error.message);
     },
   });
+}
+export const useDeleteUser = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (userId: number) => deleteUser(userId),
+    onSuccess: (response) => {
+      console.log("✅ Delete user success:", response);
+      queryClient.invalidateQueries({ queryKey: ['all-users-admin'] });
+    },
+    onError: (error: any) => {
+      console.error("❌ Delete user error:", error.response?.data || error.message);
+    }   
+});
+}
+
+export const useGetAllUsers = () => {
+  return useQuery({
+    queryKey: ['all-users'],  
+    queryFn: getAllUsers,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+export const useUpdatePasswordUser = () => {
+return useMutation({
+    mutationFn: ({ userId, newPassword }: { userId: number; newPassword: string }) => 
+      updatePasswordUserByAdmin(userId, newPassword),
+      onSuccess: (response) => {
+      console.log("✅ Update password success:", response);
+    
+    },
+    onError: (error) => {
+      console.error("❌ Update password error:", error);
+    }
+  });
+
 }
