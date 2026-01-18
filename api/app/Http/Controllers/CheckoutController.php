@@ -7,20 +7,26 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Orders;
 use App\Models\OrderItems;
+use App\Models\ProductVariant;
 use App\Services\VNPayService;
 use App\Http\Requests\CheckoutRequest;
 use App\Models\Discount;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use App\Services\DiscountService;
 
 class CheckoutController extends Controller
 {
     protected $vnpayService;
+    protected $discountService;
 
-    public function __construct(VNPayService $vnpayService)
-    {
+    public function __construct(
+        VNPayService $vnpayService,
+        DiscountService $discountService
+    ) {
         $this->vnpayService = $vnpayService;
+        $this->discountService = $discountService;
     }
 
     /**
@@ -28,7 +34,6 @@ class CheckoutController extends Controller
      */
     public function checkout(CheckoutRequest $request)
     {
-
         $data = $request->validated();
 
         DB::beginTransaction();
@@ -36,94 +41,110 @@ class CheckoutController extends Controller
             $totalAmount = 0;
             $discountAmount = 0;
             $discountId = null;
-            $discountCode = null;
-            $shippingFee = 30000; // Phí vận chuyển cố định 30k
+            $shippingFee = 30000; // Phí ship cứng (có thể nâng cấp sau)
 
-            // Tính tổng tiền hàng
+            // 1. Tính tổng tiền hàng (Tạm tính)
             foreach ($data['cart_items'] as $item) {
                 $totalAmount += $item['unit_price'] * $item['quantity'];
             }
 
-            // ✅ XỬ LÝ DISCOUNT (nếu có)
-            if (isset($data['discount_code']) && $data['discount_code']) {
-                $discount = Discount::where('code', $data['discount_code'])
-                    ->where('is_active', true)
-                    ->first();
+            // 2. XỬ LÝ MÃ GIẢM GIÁ (Dùng Service chuẩn thay vì viết if/else dài dòng)
+            if (!empty($data['discount_code'])) {
+                // Gọi sang DiscountService để kiểm tra hạn, số lượng, v.v.
+                $couponResult = $this->discountService->applyCoupon($data['discount_code'], $totalAmount);
 
-                if ($discount && $discount->is_active()) {
-                    // Kiểm tra giá trị đơn hàng tối thiểu
-                    if ($totalAmount >= $discount->min_order_value) {
-                        $discountId = $discount->id;
-                        $discountCode = $discount->code;
+                $discountAmount = $couponResult['discount_amount'];
+                $discountId     = $couponResult['discount_id'];
 
-                        // Tính discount amount
-                        if ($discount->type === 'percentage') {
-                            $discountAmount = ($totalAmount * $discount->value) / 100;
-
-                            // Giới hạn discount tối đa
-                            if ($discount->max_discount_value && $discountAmount > $discount->max_discount_value) {
-                                $discountAmount = $discount->max_discount_value;
-                            }
-                        } elseif ($discount->type === 'fixed') {
-                            $discountAmount = min($discount->value, $totalAmount);
-                        } elseif ($discount->type === 'free_shipping') {
-                            $shippingFee = 0;
-                        }
-                    }
+                // Tăng số lần sử dụng mã (Quan trọng!)
+                if (isset($couponResult['coupon_obj'])) {
+                    $couponResult['coupon_obj']->increment('used_count');
                 }
             }
 
+            // Tính tổng cuối cùng
             $grandTotal = $totalAmount - $discountAmount + $shippingFee;
+            if ($grandTotal < 0) $grandTotal = 0;
 
-            // ✅ TẠO ĐƠN HÀNG
+            // 3. TẠO ĐƠN HÀNG (ORDER HEADER)
+            // Lấy User ID an toàn hơn
+            $user = null;
+            try {
+                if ($token = JWTAuth::getToken()) {
+                    $user = JWTAuth::parseToken()->authenticate();
+                }
+            } catch (\Exception $e) {
+                // Khách vãng lai, không làm gì cả
+            }
+
             $order = Orders::create([
-                'order_code' => 'ORD' . time() . rand(100, 999),
-                'user_id' => JWTAuth::parseToken()->authenticate()->id ??  null,
-                'recipient_name' => $data['recipient_name'],
+                'order_code'      => 'ORD' . time() . rand(100, 999),
+                'user_id'         => $user ? $user->id : null,
+                'recipient_name'  => $data['recipient_name'],
                 'recipient_phone' => $data['recipient_phone'],
                 'shipping_address' => $data['shipping_address'],
-                'total_amount' => $totalAmount,
+                'total_amount'    => $totalAmount,
                 'discount_amount' => $discountAmount,
-                'shipping_fee' => $shippingFee,
-                'grand_total' => $grandTotal,
-                'payment_method' => $data['payment_method'],
-                'payment_status' => 'unpaid',
-                'order_status' => 'pending',
-                'notes' => $data['notes'] ?? null,
+                'shipping_fee'    => $shippingFee,
+                'grand_total'     => $grandTotal,
+                'payment_method'  => $data['payment_method'],
+                'payment_status'  => 'unpaid',
+                'order_status'    => 'pending',
+                'notes'           => $data['notes'] ?? null,
+                // Lưu thêm ID coupon để sau này đối soát
+                'coupon_id'       => $discountId,
             ]);
 
-            // ✅ TẠO CHI TIẾT ĐƠN HÀNG
+            // 4. TẠO CHI TIẾT & TRỪ TỒN KHO (Phần quan trọng nhất bị thiếu ở code cũ)
             foreach ($data['cart_items'] as $item) {
+                // Lock để tránh tranh chấp kho
+                $variant = ProductVariant::lockForUpdate()->find($item['variant_id']);
+
+                if (!$variant) {
+                    throw new Exception("Sản phẩm (ID: {$item['variant_id']}) không tồn tại.");
+                }
+
+                // Kiểm tra kho
+                if ($variant->stock_quantity < $item['quantity']) {
+                    throw new Exception("Sản phẩm SKU: {$variant->sku} không đủ hàng (Còn: {$variant->stock_quantity}).");
+                }
+
+                // Trừ kho
+                $variant->decrement('stock_quantity', $item['quantity']);
+
+                // Lưu chi tiết đơn
                 OrderItems::create([
-                    'order_id' => $order->id,
-                    'variant_id' => $item['variant_id'],
-                    'quantity' => $item['quantity'],
-                    'unit_price' => $item['unit_price'],
+                    'order_id'      => $order->id,
+                    'variant_id'    => $item['variant_id'],
+                    'quantity'      => $item['quantity'],
+                    'unit_price'    => $item['unit_price'],
                     'item_discount' => 0,
-                    'sub_total' => $item['unit_price'] * $item['quantity'],
+                    'sub_total'     => $item['unit_price'] * $item['quantity'],
                 ]);
             }
 
             DB::commit();
 
-            // ✅ XỬ LÝ THANH TOÁN
+            // 5. XỬ LÝ THANH TOÁN ONLINE (VNPAY)
             if ($data['payment_method'] === 'vnpay') {
                 try {
                     $ipAddress = $request->ip();
+                    // Đảm bảo hàm createPaymentUrl trong VNPayService nhận đúng tham số
                     $paymentUrl = $this->vnpayService->createPaymentUrl($order, $ipAddress);
-
 
                     return response()->json([
                         'success' => true,
-                        'message' => 'Đơn hàng được tạo thành công. Chuyển hướng đến VNPay để thanh toán.',
+                        'message' => 'Tạo link thanh toán VNPay thành công.',
                         'data' => [
                             'payment_url' => $paymentUrl,
-                            'order_code' => $order->order_code,
-                            'order_id' => $order->id,
+                            'order_code'  => $order->order_code,
+                            'order_id'    => $order->id,
                             'grand_total' => $order->grand_total,
                         ]
                     ], 200);
                 } catch (Exception $e) {
+                    // Nếu lỗi tạo link thì không rollback đơn hàng, chỉ báo lỗi
+                    // Hoặc rollback tùy nghiệp vụ (ở đây tôi chọn giữ đơn hàng pending)
                     return response()->json([
                         'success' => false,
                         'message' => 'Lỗi tạo link thanh toán: ' . $e->getMessage(),
@@ -132,38 +153,32 @@ class CheckoutController extends Controller
                 }
             }
 
-            // COD - Thanh toán khi nhận hàng
+            // 6. THANH TOÁN COD
             return response()->json([
                 'success' => true,
-                'message' => 'Đặt hàng thành công. Bạn sẽ thanh toán khi nhận hàng.',
+                'message' => 'Đặt hàng thành công. Thanh toán khi nhận hàng.',
                 'data' => [
-                    'order_code' => $order->order_code,
-                    'order_id' => $order->id,
+                    'order_code'  => $order->order_code,
+                    'order_id'    => $order->id,
                     'grand_total' => $order->grand_total,
                 ]
             ], 201);
         } catch (Exception $e) {
             DB::rollBack();
-
-            Log::error('Checkout error', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
+            Log::error('Checkout error: ' . $e->getMessage());
 
             return response()->json([
                 'success' => false,
-                'message' => 'Lỗi hệ thống: ' . $e->getMessage()
-            ], 500);
+                'message' => $e->getMessage() // Trả lỗi cụ thể (ví dụ: Hết hàng)
+            ], 500); // Hoặc 400 Bad Request
         }
     }
 
-    /**
-     * Callback từ VNPay
-     */
+    // --- CÁC HÀM CALLBACK GIỮ NGUYÊN TỪ CODE CỦA BẠN ---
+
     public function vnpayCallback(Request $request)
     {
         $result = $this->vnpayService->handleCallback($request);
-
         $frontendUrl = env('FRONTEND_URL', 'http://localhost:5317');
 
         if ($result['success']) {
@@ -185,13 +200,9 @@ class CheckoutController extends Controller
         }
     }
 
-    /**
-     * IPN từ VNPay (Server-to-Server)
-     */
     public function vnpayIPN(Request $request)
     {
         $result = $this->vnpayService->handleCallback($request);
-
         return response()->json([
             'RspCode' => $result['RspCode'],
             'Message' => $result['message'],
