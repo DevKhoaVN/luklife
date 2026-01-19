@@ -6,7 +6,8 @@ namespace App\Repositories\Contracts;
 interface OrderRepositoriesInterface
 {
 
-   public function getOrderById(string $orderId);
+   public function getOrderByCode(string $orderId);
+    public function getOrderById(int $orderId);
     public function countRevenue();
     
     public function countOrders();

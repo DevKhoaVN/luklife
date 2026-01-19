@@ -27,7 +27,7 @@ class ProductController extends Controller
 
     public function create(StoreProductRequest $request)
     {
-        $data = $request->validated();
+        $data = $request->validated();  
         // return response()->json(
         //     $request->all(),                // text fields có lên không?
         //     $request->allFiles(),           // vẫn rỗng như cũ?
@@ -78,4 +78,6 @@ class ProductController extends Controller
         $reuslt = $this->productService->deleteProduct($id);
         return response()->json($reuslt);
     }
+
+
 }

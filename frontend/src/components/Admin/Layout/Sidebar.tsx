@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { useNavigate, useLocation } from "@tanstack/react-router";
 import logo from "../../../../public/assets/header_logo.svg";
 import {
@@ -18,10 +18,12 @@ import {
   Plus,
   Edit2,
 } from "lucide-react";
+import AppContext from "../../../context/AppContext";
 
 export function Sidebar({ currentUser, onLogout, statsData, isOpen }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const { logout } = useContext(AppContext);
   const [openSubmenu, setOpenSubmenu] = useState(null);
 
   // Get active menu from current path
@@ -140,11 +142,7 @@ export function Sidebar({ currentUser, onLogout, statsData, isOpen }) {
     }
   };
 
-  const handleLogout = () => {
-    if (confirm("Đăng xuất?")) {
-      onLogout();
-    }
-  };
+  const handleLogout = () => {};
 
   return (
     <aside
@@ -258,7 +256,7 @@ export function Sidebar({ currentUser, onLogout, statsData, isOpen }) {
             </p>
           </div>
           <button
-            onClick={handleLogout}
+            onClick={logout}
             className="p-1.5 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-600 transition-colors"
             title="Đăng xuất"
           >

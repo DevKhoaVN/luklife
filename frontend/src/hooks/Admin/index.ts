@@ -1,4 +1,4 @@
-import { getAllOrders, updateOrderStatus } from './../../api/admin.api';
+import { getAllOrders, getOrderDetailByUser, updateOrderStatus } from './../../api/admin.api';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getStatic } from '../../api/admin.api';
 import { getOrderByCode } from '../../api/checkout.api';
@@ -13,7 +13,7 @@ export const useStaticData = () => {
     retry: 2,
   });
 };
-export const useGetAllOrders = ({ page = 1, status = 'all' }: { page: number; status: string }) => {
+export const useGetAllOrders = ({ page = 1, status = 'all' }: { page?: number; status?: string }) => {
   return useQuery({
     queryKey: ['admin-orders', status, page], // ← QUAN TRỌNG: key thay đổi theo status + page
     queryFn: () => getAllOrders({ page, status }),
@@ -48,4 +48,11 @@ export const useUpdateOrderStatus = () => {
 onError: (error: any) => {
       toast.error(error?.response?.data?.message || 'Cập nhật thất bại');
 }})
+}
+
+export const useGetOrderDetailByUser = () => {
+    return useQuery({
+     queryKey: ['order-detail', ],   
+    queryFn: () => getOrderDetailByUser()
+      })
 }

@@ -124,7 +124,7 @@ class OrderRepositories implements OrderRepositoriesInterface
         return Orders::where('order_status', 'delivered')->sum('grand_total');
     }
 
-    public function getOrderById(string $orderId)
+    public function getOrderByCode(string $orderId)
     {
         return Orders::with([
             // 1. Lấy danh sách item trong đơn hàng
@@ -139,5 +139,14 @@ class OrderRepositories implements OrderRepositoriesInterface
             ->where('order_code', $orderId) // Hoặc dùng findOrFail($orderId) nếu truyền ID số
             // ->where('order_code', $orderId) // Dùng cái này nếu bạn truyền mã ORD...
             ->firstOrFail();
+    }
+
+    public function getOrderById( int $orderId){
+        $reuslt =  Orders::with([
+           
+            'orderItems.variant.product',
+            'discount'
+        ])->where('user_id', $orderId)->firstOrFail();
+       return $reuslt;
     }
 }

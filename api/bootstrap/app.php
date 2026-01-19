@@ -15,7 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'auth' => \Illuminate\Auth\Middleware\Authenticate::class,
             'can' => App\Http\Middleware\Authorization::class,
-            'role' => App\Http\Middleware\CheckRole::class
+            'role' => App\Http\Middleware\CheckPermission::class
 
         ]);
     })

@@ -8,6 +8,7 @@ use App\Services\OrderService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class OrderController extends Controller
 {
@@ -175,4 +176,12 @@ class OrderController extends Controller
 
         return response()->json($result, $result['success'] ? 200 : 400);
       }
+
+    public function findOrdersByUserId()
+    {
+       
+        $id = JWTAuth::parseToken()->authenticate()->id;
+        $reuslt = $this->orderService->findOrdersByUserIds((int) $id);
+        return response()->json($reuslt);
+    }
 }

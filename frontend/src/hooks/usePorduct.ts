@@ -85,10 +85,10 @@ export const useInfiniteProductsByCategory = ({
   });
 };
 
-export const useGetAllProducts = () => {
+export const useGetAllProducts = ({ page = 1, search = '' }: { page?: number; search?: string }) => {
   return useQuery({
-    queryKey: ['allProducts'],
-    queryFn: () => getAllProducts(),
+    queryKey: ['allProducts', page, search],
+    queryFn: () => getAllProducts({ page, search }),
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }

@@ -1,0 +1,73 @@
+name: Deploy to aaPanel
+
+on:
+  push:
+    branches: ["master"]
+
+jobs:
+  # Job 1: Build và Deploy Frontend (React)
+  deploy-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install & Build Frontend
+        run: |
+          cd frontend
+          npm install
+          npm run build
+
+      - name: Deploy Frontend to Server (Rsync)
+        uses: easingthemes/ssh-deploy@main
+        with:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          ARGS: "-rlgoDzvc -i"
+          SOURCE: "frontend/dist/" # Thư mục sau khi build xong
+          REMOTE_HOST: ${{ secrets.HOST }}
+          REMOTE_USER: ${{ secrets.USERNAME }}
+          TARGET: "/www/wwwroot/luklife.shop/frontend/dist/" # Đường dẫn trên aaPanel
+          EXCLUDE: "/node_modules/"
+
+    # Job 2: Deploy Backend (Laravel)
+  deploy-backend:
+    runs-on: ubuntu-latest
+    needs: deploy-frontend # Chạy sau khi frontend xong (hoặc bỏ dòng này để chạy song song)
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Deploy Backend Code to Server
+        uses: easingthemes/ssh-deploy@main
+        with:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          ARGS: "-rlgoDzvc -i"
+          SOURCE: "api/" # Thư mục chứa code Laravel
+          REMOTE_HOST: ${{ secrets.HOST }}
+          REMOTE_USER: ${{ secrets.USERNAME }}
+          TARGET: "/www/wwwroot/luklife.shop/api/"
+          EXCLUDE: "/node_modules/, /vendor/, .env" # Không ghi đè file .env
+
+      - name: Execute Remote Commands (Install Vendor & Migrate)
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /www/wwwroot/luklife.shop/api
+            # Cài đặt thư viện PHP
+            composer install --no-interaction --prefer-dist --optimize-autoloader
+            # Cập nhật database (nếu cần)
+            php artisan migrate --force
+            # Xóa cache
+            php artisan optimize:clear
+            php artisan config:cache
+            php artisan route:cache
+            # Phân quyền lại cho chắc chắn
+            chown -R www:www /www/wwwroot/luklife.shop

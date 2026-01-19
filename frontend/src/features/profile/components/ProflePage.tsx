@@ -16,6 +16,15 @@ import {
   Trash2,
   EyeOff,
   CheckCircle,
+  Search,
+  ExternalLink,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  Printer,
+  Phone,
+  ArrowLeft,
+  ReceiptText,
 } from "lucide-react";
 import {
   useGetProfile,
@@ -29,6 +38,7 @@ import {
 } from "../../../hooks/useUser";
 import { toast } from "react-toastify";
 import { getImageUrl } from "../../../utils/inedx";
+import { useGetOrderDetailByUser } from "../../../hooks/Admin";
 
 // ==================== TYPES ====================
 interface ProfileFormData {
@@ -65,6 +75,8 @@ export default function ProfilePage() {
   const updateProfileMutation = useUpdateProfile();
   const { data: addressesData, isLoading: isLoadingAddresses } =
     useGetAddresses();
+  const { data: orderData, isLoading: isLoadingOrder } =
+    useGetOrderDetailByUser();
   const createAddressMutation = useCreateAddress();
   const updateAddressMutation = useUpdateAddress();
   const deleteAddressMutation = useDeleteAddress();
@@ -317,10 +329,192 @@ export default function ProfilePage() {
         { id: "password", label: "Đổi mật khẩu" },
       ],
     },
-    { id: "vouchers", label: "Mã khuyến mại", icon: Ticket },
-    { id: "reviews", label: "Đánh giá của tôi", icon: Star },
-    { id: "viewed", label: "Sản phẩm đã xem", icon: Eye },
   ];
+  const [selectedOrder, setSelectedOrder] = useState(null);
+
+  // 1. Hàm Helper hiển thị Badge trạng thái (Dùng chung)
+  const getStatusStyle = (status) => {
+    const styles = {
+      pending: "bg-amber-50 text-amber-700 ring-amber-600/20",
+      processing: "bg-blue-50 text-blue-700 ring-blue-600/20",
+      delivered: "bg-emerald-50 text-emerald-700 ring-emerald-600/20",
+      cancelled: "bg-red-50 text-red-700 ring-red-600/10",
+    };
+    const labels = {
+      pending: "Chờ xử lý",
+      processing: "Đang giao",
+      delivered: "Hoàn thành",
+      cancelled: "Đã hủy",
+    };
+    return (
+      <span
+        className={`inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-bold ring-1 ring-inset ${styles[status] || styles.pending}`}
+      >
+        {labels[status] || status}
+      </span>
+    );
+  };
+  // 2. Component hiển thị CHI TIẾT đơn hàng
+
+  const OrderDetailView = ({ order, onBack }) => {
+    if (!order) return null;
+
+    return (
+      <div className="animate-in fade-in duration-300 max-w-5xl mx-auto text-slate-700 bg-white p-4">
+        {/* Header đơn giản */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 pb-6 border-b border-gray-300">
+          <div>
+            <button
+              onClick={onBack}
+              className="flex items-center text-sm text-gray-500 hover:text-black mb-2 transition-colors"
+            >
+              <ArrowLeft className="h-4 w-4 mr-1" />
+              Quay lại danh sách
+            </button>
+            <h1 className="text-xl font-bold text-gray-900">
+              Chi tiết đơn hàng #{order.order_code}
+            </h1>
+            <p className="text-sm text-gray-500 mt-1">
+              Ngày đặt: {new Date(order.created_at).toLocaleDateString("vi-VN")}
+            </p>
+          </div>
+          <div>
+            <span className="inline-flex items-center px-3 py-1 rounded border border-gray-300 bg-gray-50 text-gray-600 text-xs font-medium">
+              {order.order_status === "pending" ? "Đang xử lý" : "Hoàn thành"}
+            </span>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Cột trái: Sản phẩm */}
+          <div className="lg:col-span-2 space-y-6">
+            <div className="border border-gray-300 rounded-lg overflow-hidden">
+              <div className="px-4 py-3 border-b border-gray-300 bg-gray-50/50">
+                <h3 className="text-sm font-bold text-gray-800 flex items-center gap-2">
+                  <Package className="h-4 w-4 text-gray-400" />
+                  Sản phẩm trong đơn hàng
+                </h3>
+              </div>
+
+              <div className="divide-y divide-gray-200">
+                {order.order_items.map((item) => (
+                  <div key={item.id} className="p-4 flex gap-4 items-center">
+                    <img
+                      src={item.variant.product.thumbnail}
+                      className="w-16 h-16 object-cover rounded border border-gray-300"
+                      alt={item.variant.product.name}
+                    />
+                    <div className="flex-1">
+                      <h4 className="text-sm font-bold text-gray-900 leading-tight">
+                        {item.variant.product.name}
+                      </h4>
+                      <p className="text-xs text-gray-500 mt-1 uppercase tracking-tighter">
+                        Phân loại: {item.variant.color} - {item.variant.size}
+                      </p>
+                      <div className="flex justify-between items-center mt-2">
+                        <span className="text-xs text-gray-500">
+                          Số lượng: {item.quantity}
+                        </span>
+                        <span className="text-sm font-bold text-gray-900">
+                          {Number(item.sub_total).toLocaleString()}đ
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {order.notes && (
+              <div className="p-4 bg-gray-50 rounded-lg border border-gray-300">
+                <p className="text-xs font-bold text-gray-600 uppercase mb-1">
+                  Ghi chú vận chuyển
+                </p>
+                <p className="text-sm text-gray-700 italic">"{order.notes}"</p>
+              </div>
+            )}
+          </div>
+
+          {/* Cột phải: Thông tin & Thanh toán */}
+          <div className="space-y-6">
+            {/* Vận chuyển */}
+            <div className="border border-gray-300 rounded-lg p-5 space-y-4 shadow-sm">
+              <h3 className="text-sm font-bold text-gray-900 border-b border-gray-200 pb-2 uppercase tracking-tight">
+                Thông tin khách hàng
+              </h3>
+              <div className="space-y-3">
+                <div className="flex items-start gap-3 text-sm">
+                  <User className="h-4 w-4 text-gray-400 mt-0.5" />
+                  <span className="font-bold text-gray-800">
+                    {order.recipient_name}
+                  </span>
+                </div>
+                <div className="flex items-start gap-3 text-sm">
+                  <Phone className="h-4 w-4 text-gray-400 mt-0.5" />
+                  <span className="text-gray-600">{order.recipient_phone}</span>
+                </div>
+                <div className="flex items-start gap-3 text-sm border-t border-gray-200 pt-3">
+                  <MapPin className="h-4 w-4 text-gray-400 mt-0.5" />
+                  <span className="text-gray-600 text-xs leading-relaxed leading-relaxed">
+                    {order.shipping_address}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Hóa đơn */}
+            <div className="border border-gray-300 rounded-lg p-5 bg-white shadow-sm">
+              <h3 className="text-sm font-bold text-gray-900 border-b border-gray-200 pb-2 mb-4 uppercase tracking-tight">
+                Chi tiết hóa đơn
+              </h3>
+              <div className="space-y-3 text-sm text-gray-600">
+                <div className="flex justify-between">
+                  <span>Tạm tính</span>
+                  <span className="font-medium">
+                    {Number(order.total_amount).toLocaleString()}đ
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Phí vận chuyển</span>
+                  <span className="font-medium">
+                    +{Number(order.shipping_fee).toLocaleString()}đ
+                  </span>
+                </div>
+
+                <div className="pt-4 border-t border-gray-300 flex justify-between items-center">
+                  <span className="font-bold text-gray-900">
+                    Tổng thanh toán
+                  </span>
+                  <span className="text-lg font-bold text-red-600">
+                    {Number(order.grand_total).toLocaleString()}đ
+                  </span>
+                </div>
+              </div>
+
+              <div className="mt-6 pt-4 border-t border-dashed border-gray-300 space-y-2">
+                <div className="flex justify-between text-xs">
+                  <span className="text-gray-500 uppercase">Hình thức</span>
+                  <span className="font-bold text-gray-700 uppercase">
+                    {order.payment_method}
+                  </span>
+                </div>
+                <div className="flex justify-between text-xs">
+                  <span className="text-gray-500 uppercase">Trạng thái</span>
+                  <span
+                    className={`font-bold uppercase ${order.payment_status === "paid" ? "text-green-600" : "text-gray-600"}`}
+                  >
+                    {order.payment_status === "paid"
+                      ? "Đã thu tiền"
+                      : "Chưa trả tiền"}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   // ==================== RENDER PROFILE ====================
   const renderProfileContent = () => {
@@ -1066,6 +1260,150 @@ export default function ProfilePage() {
     );
   };
 
+  const renderOrderContent = () => {
+    // Trạng thái Loading
+    if (isLoadingOrder) {
+      return (
+        <div className="flex h-64 flex-col items-center justify-center gap-3">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-200 border-t-black"></div>
+          <p className="text-xs font-medium text-gray-400 tracking-widest uppercase">
+            Đang tải dữ liệu...
+          </p>
+        </div>
+      );
+    }
+
+    // Xử lý dữ liệu sang mảng
+    const orders = Array.isArray(orderData?.data)
+      ? orderData.data
+      : orderData?.data
+        ? [orderData.data]
+        : [];
+
+    // Không có dữ liệu
+    if (orders.length === 0) {
+      return (
+        <div className="flex flex-col items-center justify-center py-20 border-2 border-dashed border-gray-100 rounded-2xl bg-gray-50/50">
+          <div className="p-4 bg-white rounded-full shadow-sm mb-4">
+            <Package className="h-8 w-8 text-gray-200" />
+          </div>
+          <h3 className="text-sm font-bold text-gray-900">
+            Không tìm thấy đơn hàng
+          </h3>
+          <p className="text-xs text-gray-400 mt-1">
+            Lịch sử giao dịch của bạn sẽ xuất hiện tại đây.
+          </p>
+        </div>
+      );
+    }
+
+    // Giao diện CHI TIẾT nếu đã chọn đơn hàng
+    if (selectedOrder) {
+      return (
+        <OrderDetailView
+          order={selectedOrder}
+          onBack={() => setSelectedOrder(null)}
+        />
+      );
+    }
+
+    // Giao diện BẢNG DANH SÁCH
+    return (
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-50 flex justify-between items-center bg-white">
+          <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
+            <ReceiptText className="h-4 w-4" /> Lịch sử mua hàng
+          </h2>
+          <span className="text-[10px] font-bold bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full uppercase tracking-tighter">
+            {orders.length} Giao dịch
+          </span>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-gray-50/50">
+                <th className="px-6 py-4 text-[11px] font-bold text-gray-400 uppercase tracking-wider">
+                  Mã đơn hàng
+                </th>
+                <th className="px-6 py-4 text-[11px] font-bold text-gray-400 uppercase tracking-wider">
+                  Ngày tạo
+                </th>
+                <th className="px-6 py-4 text-[11px] font-bold text-gray-400 uppercase tracking-wider">
+                  Sản phẩm
+                </th>
+                <th className="px-6 py-4 text-[11px] font-bold text-gray-400 uppercase tracking-wider text-right">
+                  Tổng tiền
+                </th>
+                <th className="px-6 py-4 text-[11px] font-bold text-gray-400 uppercase tracking-wider">
+                  Trạng thái
+                </th>
+                <th className="px-6 py-4 text-[11px] font-bold text-gray-400 uppercase tracking-wider text-center">
+                  Hành động
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {orders.map((order) => (
+                <tr
+                  key={order.id}
+                  className="hover:bg-gray-50/30 transition-all group"
+                >
+                  <td className="px-6 py-4">
+                    <span className="font-mono text-sm font-bold text-gray-900 group-hover:text-red-600 transition-colors">
+                      {order.order_code}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-xs text-gray-500">
+                    {new Date(order.created_at).toLocaleDateString("vi-VN")}
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex -space-x-2">
+                      {order.order_items.slice(0, 3).map((item, idx) => (
+                        <img
+                          key={idx}
+                          className="h-7 w-7 rounded-full ring-2 ring-white object-cover shadow-sm border border-gray-100"
+                          src={item.variant.product.thumbnail}
+                          alt="product"
+                        />
+                      ))}
+                      {order.order_items.length > 3 && (
+                        <div className="h-7 w-7 flex items-center justify-center rounded-full bg-gray-100 text-[9px] font-bold text-gray-500 ring-2 ring-white">
+                          +{order.order_items.length - 3}
+                        </div>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-sm font-bold text-gray-900 text-right">
+                    {Number(order.grand_total).toLocaleString()}đ
+                  </td>
+                  <td className="px-6 py-4">
+                    {getStatusStyle(order.order_status)}
+                  </td>
+                  <td className="px-6 py-4 text-center">
+                    <button
+                      onClick={() => setSelectedOrder(order)}
+                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-900 hover:text-white hover:border-gray-900 transition-all duration-200"
+                    >
+                      <Eye className="h-3.5 w-3.5" />
+                      <span className="text-[11px] font-bold uppercase">
+                        Chi tiết
+                      </span>
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  };
+
+  const renderVoucherContent = () => {
+    <p>xin chao</p>;
+  };
+
   // ==================== RENDER CONTENT ====================
   const renderContent = () => {
     switch (activeTab) {
@@ -1075,6 +1413,10 @@ export default function ProfilePage() {
         return renderAddressContent();
       case "password":
         return renderPasswordContent();
+      case "orders":
+        return renderOrderContent();
+      case "vouchers":
+        return renderVoucherContent();
       default:
         return (
           <div className="rounded-lg bg-white p-8 shadow-sm">

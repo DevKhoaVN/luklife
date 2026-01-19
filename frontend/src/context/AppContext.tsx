@@ -33,6 +33,22 @@ export const AppContextProvider = ({ children, router }) => {
       localStorage.removeItem("user");
     }
   }, [user]);
+
+  const logout = () => {
+    // 1. Xóa localStorage
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    localStorage.removeItem("cartItems"); // nếu có
+
+    // 2. Reset state
+    setUser(null);
+    setToken(null);
+    setCartItems(null);
+    setProducts([]);
+
+    // 3. Điều hướng
+    navigate({ to: "/login", replace: true });
+  };
   const value = {
     user,
     setUser,
@@ -43,6 +59,7 @@ export const AppContextProvider = ({ children, router }) => {
     setToken,
     products,
     setProducts,
+    logout,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

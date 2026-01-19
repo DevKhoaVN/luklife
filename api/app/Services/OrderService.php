@@ -102,7 +102,7 @@ class OrderService
     public function getOrderDetail(string $orderId)
     {
         try {
-            $order = $this->orderRepo->getOrderById($orderId);
+            $order = $this->orderRepo->getOrderByCode($orderId);
 
             if (!$order) {
                 return [
@@ -259,6 +259,23 @@ class OrderService
         try{
         $revenue = $this->orderRepo->countRevenue();
         return $revenue;
+        } catch (Exception $e) {
+            return [
+                'success' => false,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+
+    public function findOrdersByUserIds(int $id){
+        
+        try {
+            $orders = $this->orderRepo->getOrderById($id);
+            return [
+                'success' => true,
+                'message' => 'Lấy order thành công!',
+                'data' => $orders
+            ];
         } catch (Exception $e) {
             return [
                 'success' => false,

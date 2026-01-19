@@ -34,3 +34,8 @@ export const updateOrderStatus = async ({
   // Hoặc nếu backend dùng PUT: apiClient.put(`/orders/${id}`, { order_status: status });
   return response.data; // giả sử backend trả { success: true, data: updatedOrder, message: "..." }
 };
+
+export const getOrderDetailByUser= async() => {
+    const response = await apiClient.get(`/orders/user`)
+    return response.data;
+}

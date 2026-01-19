@@ -1,3 +1,4 @@
+import { ArrowLeft } from 'lucide-react';
 
 // src/api/product.api.ts
 import apiClient from "./axios";
@@ -49,11 +50,15 @@ export const getProductBySlug = async (slug) => {
   return response.data;
 };
 
-export const getAllProducts = async() => {
-  const response = await apiClient.get(`/products`);
+export const getAllProducts = async ({ page = 1, search = "" }) => {
+  const response = await apiClient.get("/products", {
+    params: {
+      page,    
+      search: search || undefined, 
+    },
+  });
   return response.data;
-}
-
+};
 
 // admin areas 
 
@@ -102,5 +107,9 @@ export const updateProduct = async ( productData: Product) => {
 
 export const deleteProduct = async (id: number | string) => {
   const response = await apiClient.delete(`/products/${id}`);
+  return response.data;
+}
+export const searchProduct = async (searchKey: string | undefined, page: number) => {
+  const response = await apiClient.get(`/product?search=${searchKey}&page=${page}`);
   return response.data;
 }

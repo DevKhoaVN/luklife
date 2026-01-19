@@ -31,6 +31,19 @@ class Users extends Authenticatable implements JWTSubject
         return $this->hasOne(Cart::class);
     }
 
+    
+    public function roles(){
+        return $this->belongsToMany(Roles::class, 'user_roles', 'user_id', 'role_id');
+    }
+
+    public function hasPermissionTo($permissionName){
+        return $this->roles->flatMap(function ($role) {
+            return $role->permissions;
+        })->contains('name', $permissionName);
+    }
+
+
+
     public function getJWTIdentifier()
     {
         return $this->getKey();
