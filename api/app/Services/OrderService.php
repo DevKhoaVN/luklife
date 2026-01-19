@@ -4,8 +4,10 @@ namespace App\Services;
 
 use App\Repositories\Contracts\ProductRepositoriesInterface;
 use App\Utils\CodeGenerator;
-use App\Models\Product as Product;
-use App\Models\productVariant as ProductVariant;
+use App\Models\Product;
+use App\Models\OrderItems;
+use App\Models\Discount;
+use App\Models\ProductVariant;
 use App\Repositories\Contracts\CategoriesRepositoriesInterface;
 use App\Repositories\Contracts\OrderRepositoriesInterface;
 use Illuminate\Database\Eloquent\Builder;
@@ -23,8 +25,34 @@ class OrderService
     {
         return JWTAuth::parseToken()->authenticate()->id;
     }
+    protected function restoreStockAndCoupon($orderId)
+    {
+        // 1. Lấy chi tiết các món trong đơn hàng đó
+        $items = OrderItems::where('order_id', $orderId)->get();
 
-     /**
+        foreach ($items as $item) {
+            // Cộng lại số lượng vào kho
+            // Dùng increment cho an toàn (tránh race condition)
+            ProductVariant::where('id', $item->variant_id)
+                ->increment('stock_quantity', $item->quantity);
+        }
+
+        // 2. Hoàn lại lượt dùng Coupon (nếu đơn hàng có dùng mã)
+        // Lấy thông tin đơn hàng để check coupon_id
+        $order = $this->orderRepo->findById($orderId);
+
+        if ($order && $order->coupon_id) {
+            $coupon = Discount::find($order->coupon_id);
+            if ($coupon) {
+                // Trừ đi 1 lượt đã dùng (để mã đó có thể dùng lại)
+                // Kiểm tra để không bị trừ về số âm
+                if ($coupon->used_count > 0) {
+                    $coupon->decrement('used_count');
+                }
+            }
+        }
+    }
+    /**
      * Create new order
      */
     public function createOrder(array $data)
@@ -62,7 +90,7 @@ class OrderService
     public function getAllOrders(int $perPage = 10, string $status)
     {
         try {
-            $orders = $this->orderRepo->all ($status, $perPage);
+            $orders = $this->orderRepo->all($status, $perPage);
 
             return [
                 'success' => true,
@@ -161,6 +189,7 @@ class OrderService
                 'order_status' => 'cancelled',
                 'cancelled_reason' => $reason
             ]);
+            $this->restoreStockAndCoupon($orderId);
 
             DB::commit();
 
@@ -198,18 +227,34 @@ class OrderService
         }
     }
 
-     public function updateStatus(string $orderId, array $data)
+    /**
+     * Update Status (Admin cập nhật - Có thể admin set hủy hoặc trả hàng)
+     */
+    public function updateStatus(string $orderId, array $data)
     {
+        DB::beginTransaction();
         try {
-         
+            // Lấy trạng thái cũ trước khi update để so sánh
+            $oldOrder = $this->orderRepo->findById($orderId);
+
+            // Cập nhật trạng thái mới
             $order = $this->orderRepo->update($orderId, $data);
 
-            if ($order->order_status === 'cancelled') {
-                return [
-                    'success' => false,
-                    'message' => 'Không thể cập nhật trạng thái cho đơn hàng đã hủy'
-                ];
+            if (!$oldOrder) {
+                return ['success' => false, 'message' => 'Đơn hàng không tồn tại'];
             }
+
+            // Nếu Admin chuyển trạng thái sang 'cancelled' (Hủy) hoặc 'returned' (Trả hàng)
+            // Và trạng thái cũ chưa phải là 2 trạng thái này (để tránh hoàn kho 2 lần)
+            $isCancelledOrReturned = in_array($data['order_status'], ['cancelled', 'returned']);
+            $wasNotCancelledOrReturned = !in_array($oldOrder->order_status, ['cancelled', 'returned']);
+
+            if ($isCancelledOrReturned && $wasNotCancelledOrReturned) {
+                // [QUAN TRỌNG] GỌI HÀM HOÀN KHO
+                $this->restoreStockAndCoupon($orderId);
+            }
+
+            DB::commit();
 
             return [
                 'success' => true,
@@ -217,10 +262,8 @@ class OrderService
                 'data' => $order
             ];
         } catch (Exception $e) {
-            return [
-                'success' => false,
-                'message' => $e->getMessage()
-            ];
+            DB::rollBack();
+            return ['success' => false, 'message' => $e->getMessage()];
         }
     }
 
@@ -244,10 +287,11 @@ class OrderService
             ];
         }
     }
-    public function countOrders(){
-        try{
-        $count = $this->orderRepo->countOrders();
-        return $count;
+    public function countOrders()
+    {
+        try {
+            $count = $this->orderRepo->countOrders();
+            return $count;
         } catch (Exception $e) {
             return [
                 'success' => false,
@@ -255,10 +299,11 @@ class OrderService
             ];
         }
     }
-    public function countRevenue(){
-        try{
-        $revenue = $this->orderRepo->countRevenue();
-        return $revenue;
+    public function countRevenue()
+    {
+        try {
+            $revenue = $this->orderRepo->countRevenue();
+            return $revenue;
         } catch (Exception $e) {
             return [
                 'success' => false,

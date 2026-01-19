@@ -3,7 +3,7 @@
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\v1\Auth\AuthController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\v1\Admin\CategoriesController ;
+use App\Http\Controllers\v1\Admin\CategoriesController;
 use App\Http\Controllers\v1\Products\ProductController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
@@ -55,7 +55,6 @@ Route::prefix('cart')->group(function () {
     Route::post('items', [CartController::class, 'addToCart']);
     Route::put('/', [CartController::class, 'updateQuantity']);
     Route::post('delete', [CartController::class, 'deleteItemFromCart']);
-
 });
 Route::middleware('can')->group(function () {
     Route::prefix('user')->group(function () {
@@ -82,7 +81,6 @@ Route::prefix('discounts')->group(function () {
     Route::delete('/{id}', [DiscountController::class, 'deleteDiscount']);
     Route::patch('/{id}/toggle-status', [DiscountController::class, 'toggleStatus']);
     Route::post('/apply', [DiscountController::class, 'applyCode']);
-
 });
 
 
@@ -97,10 +95,20 @@ Route::prefix('vnpay')->group(function () {
 
 Route::prefix('admin')->group(function () {
     Route::get('/static', [AdminController::class, 'dashboardStats']);
+    Route::prefix('orders')->group(function () {
+        Route::get('/', [OrderController::class, 'getAllOrders']);
+        Route::get('/count', [OrderController::class, 'countOrders']);
+        Route::get('/filter', [OrderController::class, 'filterByStatus']);
+        Route::get('/{orderId}', [OrderController::class, 'getOrderByOrderId']);
+        Route::put('/update-status/{orderId}', [OrderController::class, 'updateStatusOrder']);
+        Route::delete('/{id}', [OrderController::class, 'destroy']);
+    });
 });
 
 Route::prefix('orders')->group(function () {
     Route::get('/', [OrderController::class, 'getAllOrders']);
     Route::get('/{orderId}', [OrderController::class, 'getOrderByOrderId']);
     Route::put('/{orderId}', [OrderController::class, 'updateStatusOrder']);
+    Route::get('/my-orders', [OrderController::class, 'getMyOrders']);
+    Route::put('/{id}/cancel', [OrderController::class, 'cancel']);
 });

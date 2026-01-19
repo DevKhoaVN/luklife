@@ -29,7 +29,7 @@ class RegisterRequest extends FormRequest
             'email' => ['required', 'string', 'email', 'max:255'],
             'date_of_birth' => ['required', 'date', 'before:today'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
-            
+
         ];
     }
 }
