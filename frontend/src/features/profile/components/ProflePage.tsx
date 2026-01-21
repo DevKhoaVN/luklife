@@ -25,6 +25,7 @@ import {
   Phone,
   ArrowLeft,
   ReceiptText,
+  LogOut,
 } from "lucide-react";
 import {
   useGetProfile,
@@ -39,6 +40,9 @@ import {
 import { toast } from "react-toastify";
 import { getImageUrl } from "../../../utils/inedx";
 import { useGetOrderDetailByUser } from "../../../hooks/Admin";
+import { logout } from "../../../api/auth.api";
+import { useNavigate } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
 
 // ==================== TYPES ====================
 interface ProfileFormData {
@@ -47,6 +51,7 @@ interface ProfileFormData {
   gender: "male" | "female" | "other";
   phone: string;
   email: string;
+  avatar: any;
 }
 
 interface AddressFormData {
@@ -66,6 +71,8 @@ interface PasswordFormData {
 }
 
 export default function ProfilePage() {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("profile");
   const [avatar, setAvatar] = useState<string | null>(null);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
@@ -191,21 +198,27 @@ export default function ProfilePage() {
 
   const onSubmitProfile = async (data: ProfileFormData) => {
     console.log("💾 Saving profile:", data);
+    console.log("avatrt", avatarFile);
 
     try {
-      const profileData = {
-        full_name: data.fullName || null,
-        gender: data.gender || null,
-        date_of_birth: data.birthDate || null,
-        phone: data.phone || null,
-        avatar: avatarFile || null,
-      };
+      const formData = new FormData();
 
-      await updateProfileMutation.mutateAsync(profileData);
+      if (data.fullName) formData.append("full_name", data.fullName);
+      if (data.gender) formData.append("gender", data.gender);
+      if (data.birthDate) formData.append("date_of_birth", data.birthDate);
+      if (data.phone) formData.append("phone", data.phone);
+
+      if (avatarFile) {
+        formData.append("avatar", avatarFile); // ✅ FILE Ở ĐÂY
+      }
+
+      console.log("💾 Saving profile:", formData);
+      await updateProfileMutation.mutateAsync(formData);
+
       setAvatarFile(null);
       toast.success("Cập nhật profile thành công");
     } catch (error) {
-      console.error("❌ Error updating profile:", error);
+      console.error(" Error updating profile:", error);
       toast.error("Cập nhật profile thất bại");
     }
   };
@@ -329,6 +342,7 @@ export default function ProfilePage() {
         { id: "password", label: "Đổi mật khẩu" },
       ],
     },
+    { id: "logout", label: "Đăng xuất", icon: LogOut },
   ];
   const [selectedOrder, setSelectedOrder] = useState(null);
 
@@ -1400,8 +1414,70 @@ export default function ProfilePage() {
     );
   };
 
-  const renderVoucherContent = () => {
-    <p>xin chao</p>;
+  const renderLogoutContent = () => {
+    const handleLogout = async () => {
+      console.log("Thực hiện đăng xuất...");
+
+      // Gọi backend để xóa refresh cookie (kể cả fail cũng không sao)
+      await logout();
+
+      // Clear toàn bộ state phía FE
+      queryClient.clear();
+
+      toast.success("Đăng xuất thành công");
+      navigate({ to: "/" });
+    };
+
+    return (
+      <div className="flex items-center justify-center min-h-[400px] w-full bg-gray-50/50 rounded-xl">
+        <div className="bg-white p-10 rounded-3xl shadow-[0_10px_40px_rgba(0,0,0,0.04)] max-w-md w-full border border-gray-100 transition-all">
+          {/* Icon Wrapper */}
+          <div className="flex justify-center mb-6">
+            <div className="relative">
+              <div className="absolute inset-0 bg-red-100 rounded-full blur-lg opacity-50"></div>
+              <div className="relative bg-red-50 p-5 rounded-full">
+                <svg
+                  className="w-10 h-10 text-red-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="1.5"
+                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                  />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-gray-800 mb-3">
+              Xác nhận đăng xuất
+            </h2>
+            <p className="text-gray-500 leading-relaxed">
+              Bạn có chắc chắn muốn thoát khỏi tài khoản
+              <span className="font-semibold text-gray-700 block mt-1">
+                Tôn Ngộ Không?
+              </span>
+            </p>
+          </div>
+
+          {/* Action Buttons */}
+          <div className=" w-full text-center">
+            <button
+              onClick={handleLogout}
+              className="flex-1 py-3.5 px-6 rounded-xl font-semibold text-white bg-[#ee0000] hover:bg-red-700 shadow-lg shadow-red-200 transition-all duration-200 active:scale-95"
+            >
+              Đăng xuất
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   // ==================== RENDER CONTENT ====================
@@ -1415,8 +1491,8 @@ export default function ProfilePage() {
         return renderPasswordContent();
       case "orders":
         return renderOrderContent();
-      case "vouchers":
-        return renderVoucherContent();
+      case "logout":
+        return renderLogoutContent();
       default:
         return (
           <div className="rounded-lg bg-white p-8 shadow-sm">

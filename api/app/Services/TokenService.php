@@ -77,11 +77,7 @@ class TokenService
 
     public function revokeRefreshToken(int $userId)
     {
-        $tokenRecord = $this->tokenRepo->findTokenByUserId($userId);
-
-        if ($tokenRecord) {
-            $this->tokenRepo->deleteToken($tokenRecord->token_hash);
-        }
+      return $this->tokenRepo->deleteTokensByUserId($userId);
     }
 
     public function findToken(string $token){

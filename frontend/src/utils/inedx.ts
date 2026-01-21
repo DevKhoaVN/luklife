@@ -15,3 +15,18 @@ export const getImageUrl = (path: string | null): string => {
   const baseUrl = import.meta.env.VITE_BASE_URL|| 'http://localhost:8000';
   return `${baseUrl}/storage/${path}`;
 };
+
+export const formatPrice = (price: number) =>
+  new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+  }).format(price);
+
+ export  const formatDate = (dateString: string) => {
+  if (!dateString) return "";
+  return new Date(dateString).toLocaleDateString("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }); // Kết quả: "01/06/2026"
+};

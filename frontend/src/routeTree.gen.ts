@@ -19,6 +19,7 @@ import { Route as SanPhamSlugRouteImport } from './routes/san-pham/$slug'
 import { Route as DashboardUnauthorizeRouteImport } from './routes/dashboard/unauthorize'
 import { Route as DashboardOverviewRouteImport } from './routes/dashboard/overview'
 import { Route as DashboardLoginRouteImport } from './routes/dashboard/login'
+import { Route as DashboardDiscountsRouteImport } from './routes/dashboard/discounts'
 import { Route as DashboardCustomersRouteImport } from './routes/dashboard/customers'
 import { Route as DanhMucSanPhamSlugRouteImport } from './routes/danh-muc-san-pham/$slug'
 import { Route as AuthRegisterRouteImport } from './routes/auth/register'
@@ -79,6 +80,11 @@ const DashboardOverviewRoute = DashboardOverviewRouteImport.update({
 const DashboardLoginRoute = DashboardLoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardDiscountsRoute = DashboardDiscountsRouteImport.update({
+  id: '/discounts',
+  path: '/discounts',
   getParentRoute: () => DashboardRoute,
 } as any)
 const DashboardCustomersRoute = DashboardCustomersRouteImport.update({
@@ -145,6 +151,7 @@ export interface FileRoutesByFullPath {
   '/auth/register': typeof AuthRegisterRoute
   '/danh-muc-san-pham/$slug': typeof DanhMucSanPhamSlugRoute
   '/dashboard/customers': typeof DashboardCustomersRoute
+  '/dashboard/discounts': typeof DashboardDiscountsRoute
   '/dashboard/login': typeof DashboardLoginRoute
   '/dashboard/overview': typeof DashboardOverviewRoute
   '/dashboard/unauthorize': typeof DashboardUnauthorizeRoute
@@ -167,6 +174,7 @@ export interface FileRoutesByTo {
   '/auth/register': typeof AuthRegisterRoute
   '/danh-muc-san-pham/$slug': typeof DanhMucSanPhamSlugRoute
   '/dashboard/customers': typeof DashboardCustomersRoute
+  '/dashboard/discounts': typeof DashboardDiscountsRoute
   '/dashboard/login': typeof DashboardLoginRoute
   '/dashboard/overview': typeof DashboardOverviewRoute
   '/dashboard/unauthorize': typeof DashboardUnauthorizeRoute
@@ -191,6 +199,7 @@ export interface FileRoutesById {
   '/auth/register': typeof AuthRegisterRoute
   '/danh-muc-san-pham/$slug': typeof DanhMucSanPhamSlugRoute
   '/dashboard/customers': typeof DashboardCustomersRoute
+  '/dashboard/discounts': typeof DashboardDiscountsRoute
   '/dashboard/login': typeof DashboardLoginRoute
   '/dashboard/overview': typeof DashboardOverviewRoute
   '/dashboard/unauthorize': typeof DashboardUnauthorizeRoute
@@ -216,6 +225,7 @@ export interface FileRouteTypes {
     | '/auth/register'
     | '/danh-muc-san-pham/$slug'
     | '/dashboard/customers'
+    | '/dashboard/discounts'
     | '/dashboard/login'
     | '/dashboard/overview'
     | '/dashboard/unauthorize'
@@ -238,6 +248,7 @@ export interface FileRouteTypes {
     | '/auth/register'
     | '/danh-muc-san-pham/$slug'
     | '/dashboard/customers'
+    | '/dashboard/discounts'
     | '/dashboard/login'
     | '/dashboard/overview'
     | '/dashboard/unauthorize'
@@ -261,6 +272,7 @@ export interface FileRouteTypes {
     | '/auth/register'
     | '/danh-muc-san-pham/$slug'
     | '/dashboard/customers'
+    | '/dashboard/discounts'
     | '/dashboard/login'
     | '/dashboard/overview'
     | '/dashboard/unauthorize'
@@ -363,6 +375,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardLoginRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/discounts': {
+      id: '/dashboard/discounts'
+      path: '/discounts'
+      fullPath: '/dashboard/discounts'
+      preLoaderRoute: typeof DashboardDiscountsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/customers': {
       id: '/dashboard/customers'
       path: '/customers'
@@ -445,6 +464,7 @@ declare module '@tanstack/react-router' {
 
 interface DashboardRouteChildren {
   DashboardCustomersRoute: typeof DashboardCustomersRoute
+  DashboardDiscountsRoute: typeof DashboardDiscountsRoute
   DashboardLoginRoute: typeof DashboardLoginRoute
   DashboardOverviewRoute: typeof DashboardOverviewRoute
   DashboardUnauthorizeRoute: typeof DashboardUnauthorizeRoute
@@ -458,6 +478,7 @@ interface DashboardRouteChildren {
 
 const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardCustomersRoute: DashboardCustomersRoute,
+  DashboardDiscountsRoute: DashboardDiscountsRoute,
   DashboardLoginRoute: DashboardLoginRoute,
   DashboardOverviewRoute: DashboardOverviewRoute,
   DashboardUnauthorizeRoute: DashboardUnauthorizeRoute,

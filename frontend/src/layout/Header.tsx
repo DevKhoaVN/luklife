@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import logo from "../../public/assets/header_logo.svg";
 
 import {
@@ -10,11 +10,15 @@ import {
   ChevronDown,
   LogIn,
   UserPlus,
+  Loader2,
 } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { MENU_CATEGORIES, slidesData } from "../constant";
 import AppContext from "../context/AppContext";
 import { useGetCart } from "../hooks/useCart";
+import { useSearchProduct } from "../hooks/usePorduct";
+import { useDebounce } from "../hooks/useDebounce";
+import { formatPrice } from "../utils/inedx";
 
 const MenuIcon = () => (
   <svg
@@ -99,13 +103,50 @@ export default function Header() {
   const [isLoggedIn, setIsLoggedIn] = useState(false); // Trạng thái đăng nhập
   const [hoveredCategory, setHoveredCategory] = useState(null);
   const { data: cartData, isLoading } = useGetCart(user?.id);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const searchRef = useRef(null);
+  const [keyword, setKeyword] = useState("");
+  const debouncedKeyword = useDebounce(keyword, 500);
+
+  const { data: searchResults, isSearchLoading } =
+    useSearchProduct(debouncedKeyword);
 
   const cartQuantity = cartData?.data?.items?.length || 0;
+  const products = searchResults?.data?.data || [];
+  console.log("san pham search ", products);
 
   useEffect(() => {
     if (cartData) setCartItems(cartData?.data);
   }, [cartData]);
 
+  // 3. Xử lý click ra ngoài để đóng dropdown
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // 4. Mở lại dropdown khi gõ hoặc có kết quả
+  useEffect(() => {
+    if (debouncedKeyword && products.length > 0) {
+      setShowDropdown(true);
+    }
+  }, [debouncedKeyword, products.length]);
+
+  const handleSearchSubmit = () => {
+    setShowDropdown(false); // Đóng dropdown khi submit
+    if (keyword.trim()) {
+      navigate({ to: "/search", search: { q: keyword } });
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") handleSearchSubmit();
+  };
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
@@ -116,7 +157,7 @@ export default function Header() {
 
   return (
     <>
-      <header className="w-full relative z-40">
+      <header className="w-full relative z-[100]">
         {/* TOP BAR */}
         <div className="bg-red-600 text-white text-[8px] sm:text-sm font-bold text-center py-2 px-4">
           GIỎ HÀNG TIẾT KIỆM ONLINE{" "}
@@ -149,17 +190,120 @@ export default function Header() {
             </div>
 
             {/* NHÓM 2: SEARCH (Ở giữa) - Sẽ giãn ra nhờ flex-1 */}
-            <div className="flex-1 max-w-3xl hidden lg:block">
-              <div className="flex rounded-lg border border-gray-300 overflow-hidden bg-white">
+            <div
+              className="flex-1 max-w-3xl hidden lg:block relative"
+              ref={searchRef}
+            >
+              <div className="flex rounded-lg border border-gray-300 overflow-hidden bg-white focus-within:ring-2 focus-within:ring-red-200 transition-all">
                 <input
                   type="text"
                   placeholder="Tìm kiếm sản phẩm, thương hiệu..."
                   className="flex-1 px-4 py-2 outline-none text-gray-700 placeholder-gray-400"
+                  value={keyword}
+                  onChange={(e) => {
+                    setKeyword(e.target.value);
+                    if (!e.target.value) setShowDropdown(false);
+                  }}
+                  onFocus={() => {
+                    if (debouncedKeyword && products.length > 0)
+                      setShowDropdown(true);
+                  }}
+                  onKeyDown={handleKeyDown}
                 />
-                <button className="bg-red-600 px-4 text-white hover:bg-red-700 transition duration-300 flex items-center justify-center">
-                  <Search />
+
+                {/* Nút Clear Text (Hiện khi có text) */}
+                {keyword && (
+                  <button
+                    onClick={() => {
+                      setKeyword("");
+                      setShowDropdown(false);
+                    }}
+                    className="px-2 text-gray-400 hover:text-gray-600"
+                  >
+                    <X size={16} />
+                  </button>
+                )}
+
+                <button
+                  onClick={handleSearchSubmit}
+                  className="bg-red-600 px-6 text-white hover:bg-red-700 transition duration-300 flex items-center justify-center"
+                >
+                  <Search size={20} />
                 </button>
               </div>
+
+              {/* --- DROPDOWN KẾT QUẢ --- */}
+              {keyword && showDropdown && (
+                <div className="absolute top-full left-0 w-full mt-2 bg-white rounded-lg shadow-xl border border-gray-100 overflow-hidden z-50">
+                  {/* Trường hợp đang tải */}
+                  {isSearchLoading ? (
+                    <div className="p-6 text-center text-gray-500 flex flex-col items-center">
+                      <Loader2 className="animate-spin mb-2 text-red-600" />
+                      <span className="text-sm">Đang tìm kiếm...</span>
+                    </div>
+                  ) : products.length > 0 ? (
+                    // Trường hợp CÓ kết quả
+                    <div className="py-2">
+                      <div className="px-3 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                        Sản phẩm gợi ý
+                      </div>
+
+                      {/* List Products */}
+                      <ul className="max-h-[320px] overflow-y-auto custom-scrollbar">
+                        {products.slice(0, 5).map((product) => (
+                          <li key={product.id}>
+                            <Link
+                              to={`/san-pham/${product.slug}`}
+                              onClick={() => setShowDropdown(false)}
+                              className="flex items-start gap-4 p-3 hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0"
+                            >
+                              <div className="w-12 h-12 flex-shrink-0 border border-gray-200 rounded-md overflow-hidden">
+                                <img
+                                  src={product.thumbnail || product.image} // Dùng field thumbnail từ API
+                                  alt={product.name}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+
+                              <div className="flex-1 min-w-0">
+                                <h4 className="text-sm font-medium text-gray-800 line-clamp-2 leading-tight mb-1">
+                                  {product.name}
+                                </h4>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-red-600 font-bold text-sm">
+                                    {formatPrice(product.price)}
+                                  </span>
+                                  {product.discount_percentage > 0 && (
+                                    <span className="text-xs text-white bg-red-500 px-1 rounded">
+                                      -{product.discount_percentage}%
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+
+                      {/* Footer: Xem tất cả */}
+                      <div className="border-t border-gray-100 bg-gray-50 p-2 text-center">
+                        <button
+                          onClick={handleSearchSubmit}
+                          className="text-sm text-red-600 font-medium hover:underline"
+                        >
+                          Xem tất cả {products.length} kết quả
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    // Trường hợp KHÔNG tìm thấy
+                    <div className="p-8 text-center text-gray-500">
+                      <Search className="w-8 h-8 mx-auto mb-2 opacity-20" />
+                      <p>Không tìm thấy sản phẩm nào cho "{keyword}"</p>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* NHÓM 3: ICONS (Bên phải) */}

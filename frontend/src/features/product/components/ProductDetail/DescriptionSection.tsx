@@ -5,13 +5,14 @@ const DescriptionSection = ({
   productName,
   shortDesc,
   promoBanner,
+  description,
 }: {
   productName: string;
   shortDesc: string;
   promoBanner?: string;
+  description?: string;
 }) => {
   const [isDescOpen, setIsDescOpen] = useState(true);
-  const [isMaterialOpen, setIsMaterialOpen] = useState(true);
   const [isFullDescExpanded, setIsFullDescExpanded] = useState(false);
 
   return (
@@ -60,53 +61,9 @@ const DescriptionSection = ({
             </button>
             {isFullDescExpanded && (
               <div className="mt-4 p-4 border-l-4 border-red-500 bg-gray-50 text-gray-700">
-                <p>Nội dung mô tả chi tiết đầy đủ của sản phẩm...</p>
+                <p>{description}</p>
               </div>
             )}
-          </div>
-        )}
-      </div>
-
-      {/* Thành phần chất liệu */}
-      <div className="border-b border-gray-200">
-        <button
-          onClick={() => setIsMaterialOpen(!isMaterialOpen)}
-          className="flex justify-between items-center w-full py-4 font-sans text-black font-bold hover:bg-gray-50 transition-colors"
-        >
-          THÀNH PHẦN, CHẤT LIỆU
-          <ChevronDown
-            size={20}
-            className={`transition-transform duration-300 ${
-              isMaterialOpen ? "rotate-180" : "rotate-0"
-            }`}
-          />
-        </button>
-        {isMaterialOpen && (
-          <div className="p-4">
-            <ul className="space-y-3">
-              <li>
-                <span className="font-semibold text-gray-800">
-                  Thành phần chính:
-                </span>
-                <span className="ml-2 text-gray-600">
-                  95% Cotton, 5% Spandex
-                </span>
-              </li>
-              <li>
-                <span className="font-semibold text-gray-800">Công nghệ:</span>
-                <span className="ml-2 text-gray-600">
-                  Vải cao cấp, thoáng khí
-                </span>
-              </li>
-              <li>
-                <span className="font-semibold text-gray-800">
-                  Hướng dẫn bảo quản:
-                </span>
-                <span className="ml-2 text-gray-600">
-                  Giặt máy ở nhiệt độ thấp
-                </span>
-              </li>
-            </ul>
           </div>
         )}
       </div>

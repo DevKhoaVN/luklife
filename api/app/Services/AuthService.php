@@ -95,9 +95,7 @@ class AuthService
                     'full_name' => $data['full_name'] ?? null,
                     'email' => $data['email'],
                     'password' => $data['password'],
-                    'gender' => $data['gender'],
-                    'phone' => $data['phone'],
-                    'date_of_birth' => $data['date_of_birth']
+                   
                 ]);
 
             if (!$user) {
@@ -243,8 +241,14 @@ class AuthService
     {
         try {
             // Xóa refresh token của user (có thể xóa token cụ thể hoặc tất cả)
-            $this->tokenService->revokeRefreshToken($userId);
+            $deleted = $this->tokenService->revokeRefreshToken($userId);
 
+            if(!$deleted){
+                return [
+                    'success' => false,
+                    'message' => 'Xảy ra lỗi khi xóa token',
+                ];
+            }
             return [
                 'success' => true,
                 'message' => 'Đăng xuất thành công',
@@ -257,45 +261,62 @@ class AuthService
         }
     }
 
-    public function refresh(Request $request){
-        $refreshToken = $request->cookie('refresh_token');
-
-        if(empty($refreshToken)){
+    public function refreshToken(?string $refreshToken, Request $request): array
+    {
+        // 1. Validate Input
+        if (empty($refreshToken)) {
             return [
                 'success' => false,
-                'message' => 'Refresh token không được để trống',
+                'message' => 'Refresh token không được để trống'
             ];
         }
 
-        try{
-
+        try {
+            // 2. Hash token để tìm trong DB
             $tokenHash = hash('sha256', $refreshToken);
-            $token = $this->tokenService->findToken($tokenHash);
 
-            if(!$token || !hash_equals($token->token_hash, $tokenHash) || $token->expires_at < now()){
-                throw new Exception('Refresh token không hợp lệ');
+            // 3. Tìm Token trong DB
+            $tokenRecord = $this->tokenService->findToken($tokenHash);
+
+            // 4. Validate Token (Tồn tại? Hash khớp? Hết hạn?)
+            if (
+                !$tokenRecord ||
+                !hash_equals($tokenRecord->token_hash, $tokenHash) ||
+                $tokenRecord->expires_at < now()
+            ) {
+                return [
+                    'success' => false,
+                    'message' => 'Refresh token không hợp lệ hoặc đã hết hạn'
+                ];
             }
 
-            $user = $this->userRepo->findUserById($token->user_id);
-            if(!$user ){
-                throw new Exception('User không tồn tại');
+            // 5. Lấy User
+            $user = $this->userRepo->findUserById($tokenRecord->user_id);
+            if (!$user) {
+                return [
+                    'success' => false,
+                    'message' => 'User không tồn tại'
+                ];
             }
 
-            $generatedToken = $this->tokenService->createKeyToken($user, $request);
-            
+            // 6. Tạo cặp Token mới (Access + Refresh)
+            // Giả sử hàm createKeyToken trả về mảng ['access_token' => '...', 'refresh_token' => '...', 'expires_in' => ...]
+            $newTokens = $this->tokenService->createKeyToken($user, $request);
+
+            // 7. (Optional) Thu hồi token cũ để tránh dùng lại (Token Rotation)
+            // $this->tokenService->revokeToken($tokenRecord->id);
+
             return [
                 'success' => true,
-                'tokens' => $generatedToken
+                'data' => $newTokens
             ];
+        } catch (Exception $e) {
+           
 
-        }catch(Exception $e){
             return [
                 'success' => false,
-                'message' => 'Làm mới token thất bại: ' . $e->getMessage()
+                'message' => 'Lỗi hệ thống khi làm mới token'
             ];
         }
-
-
-
     }
 }

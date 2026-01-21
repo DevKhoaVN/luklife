@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useContext } from "react";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Loader2, ChevronLeft } from "lucide-react";
 import {
   useParams,
   useLocation,
@@ -21,6 +21,15 @@ import { useAddToCart } from "../../../../hooks/useCart";
 import AppContext from "../../../../context/AppContext";
 import { useQueryClient } from "@tanstack/react-query";
 import { Bounce, toast } from "react-toastify";
+import { useInfiniteProductsByCategory } from "../../../../hooks/usePorduct";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation, FreeMode } from "swiper/modules";
+import ProductCard from "../ProductCard";
+
+// Import CSS Swiper (Bắt buộc)
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/free-mode";
 
 function ProductDetailPage() {
   const queryClient = useQueryClient();
@@ -38,6 +47,28 @@ function ProductDetailPage() {
     error,
   } = useGetProductDetail(slug);
 
+  // Lấy category slug của sản phẩm hiện tại để tìm sản phẩm liên quan
+  const relatedCategorySlug = response?.data?.categories?.[0]?.slug;
+  console.log("san pham lien quan: ", relatedCategorySlug);
+
+  const {
+    data: relatedData,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading: isRelatedLoading,
+  } = useInfiniteProductsByCategory({
+    slug: relatedCategorySlug, // Chỉ fetch khi đã có slug
+    limit: 8, // Lấy 8 sản phẩm mỗi lần load
+    sort: "newest",
+  });
+
+  console.log("data realtion product", relatedData?.pages?.[0]?.data?.data);
+  // Gộp tất cả các trang thành 1 mảng sản phẩm duy nhất
+  const relatedProducts = useMemo(() => {
+    return relatedData?.pages?.[0]?.data?.data || [];
+  }, [relatedData]);
+  //relatedData?.pages?.[0]?.data?.data
   // State management
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState("");
@@ -91,6 +122,7 @@ function ProductDetailPage() {
       mainImage: apiData.thumbnail,
       thumbnails,
       shortDesc: "",
+      description: apiData.description || "",
       variants: apiData.product_variants || [],
       vouchers: MOCK_VOUCHERS,
     };
@@ -116,7 +148,7 @@ function ProductDetailPage() {
     if (!mappedData) return 0;
 
     const variant = mappedData.variants.find(
-      (v) => v.color === selectedColor && v.size === selectedSize
+      (v) => v.color === selectedColor && v.size === selectedSize,
     );
     return variant?.stock_quantity || 0;
   }, [mappedData, selectedColor, selectedSize]);
@@ -182,7 +214,7 @@ function ProductDetailPage() {
 
     // ✅ TÌM VARIANT
     const selectedVariant = mappedData.variants.find(
-      (v) => v.color === selectedColor && v.size === selectedSize
+      (v) => v.color === selectedColor && v.size === selectedSize,
     );
 
     console.log("Selected Variant:", selectedVariant);
@@ -238,7 +270,7 @@ function ProductDetailPage() {
             "Không thể thêm vào giỏ hàng";
           alert("Lỗi: " + errorMessage);
         },
-      }
+      },
     );
   };
 
@@ -256,7 +288,7 @@ function ProductDetailPage() {
     }
 
     const selectedVariant = mappedData.variants.find(
-      (v) => v.color === selectedColor && v.size === selectedSize
+      (v) => v.color === selectedColor && v.size === selectedSize,
     );
 
     if (!selectedVariant) {
@@ -419,21 +451,82 @@ function ProductDetailPage() {
 
       {/* Description Section */}
       <DescriptionSection
+        description={mappedData.description}
         productName={mappedData.productName}
         shortDesc={mappedData.shortDesc}
         promoBanner={mappedData.mainImage}
       />
 
-      {/* Related Product */}
-      <section className="mt-20 pt-8 border-t">
-        <h2 className="text-xl font-sans text-black font-bold mb-6">
-          Sản Phẩm Liên Quan
-        </h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          <p className="text-gray-500 col-span-full text-center">
-            Chưa có sản phẩm liên quan
-          </p>
+      {/* Related Product Section with Swiper */}
+      <section className="mt-20 pt-8 border-t relative group/section">
+        <div className="flex items-center justify-between mb-6 px-1">
+          <h2 className="text-xl font-sans text-black font-bold">
+            Sản Phẩm Liên Quan
+          </h2>
+
+          {/* Custom Navigation Buttons (Hiển thị góc phải hoặc 2 bên tùy chỉnh) */}
+          <div className="flex gap-2">
+            <button className="swiper-prev-btn p-2 rounded-full border border-gray-300 hover:bg-red-50 hover:border-red-600 hover:text-red-600 transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+              <ChevronLeft size={20} />
+            </button>
+            <button className="swiper-next-btn p-2 rounded-full border border-gray-300 hover:bg-red-50 hover:border-red-600 hover:text-red-600 transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+              <ChevronRight size={20} />
+            </button>
+          </div>
         </div>
+
+        {/* Loading State */}
+        {isRelatedLoading ? (
+          <div className="flex justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
+          </div>
+        ) : relatedProducts.length > 0 ? (
+          <div className="relative px-1">
+            <Swiper
+              modules={[Navigation, FreeMode]}
+              spaceBetween={20}
+              slidesPerView={2} // Mặc định mobile 2 cột
+              freeMode={true}
+              navigation={{
+                prevEl: ".swiper-prev-btn", // Class nút lùi
+                nextEl: ".swiper-next-btn", // Class nút tiến
+              }}
+              breakpoints={{
+                640: { slidesPerView: 3, spaceBetween: 20 }, // Tablet
+                1024: { slidesPerView: 4, spaceBetween: 24 }, // Desktop
+              }}
+              // QUAN TRỌNG: Gọi API load thêm khi lướt đến cuối
+              onReachEnd={() => {
+                if (hasNextPage && !isFetchingNextPage) {
+                  fetchNextPage();
+                }
+              }}
+              className="pb-4" // Padding bottom cho shadow không bị cắt
+            >
+              {relatedProducts
+                .filter((p) => p.id !== mappedData?.productId)
+                .map((product) => (
+                  <SwiperSlide key={product.id}>
+                    <ProductCard product={product} />
+                  </SwiperSlide>
+                ))}
+
+              {/* Slide Loading Cuối cùng (Hiện khi đang fetch trang mới) */}
+              {isFetchingNextPage && (
+                <SwiperSlide>
+                  <div className="h-full flex flex-col items-center justify-center bg-gray-50 rounded-lg aspect-[3/4]">
+                    <Loader2 className="animate-spin text-red-600 w-8 h-8 mb-2" />
+                    <span className="text-xs text-gray-500">Đang tải...</span>
+                  </div>
+                </SwiperSlide>
+              )}
+            </Swiper>
+          </div>
+        ) : (
+          <p className="text-gray-500 text-center py-8">
+            Chưa có sản phẩm liên quan nào.
+          </p>
+        )}
       </section>
     </main>
   );

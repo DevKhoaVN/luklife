@@ -11,6 +11,7 @@ import {
   createProduct,
   updateProduct,
   deleteProduct,
+  searchProduct,
 } from '../api/product.api';
 import { toast } from 'react-toastify';
 
@@ -130,3 +131,22 @@ export const useDeleteProduct = () => {
     },
   });
 }
+
+export const useSearchProduct = (searchKey: string | undefined, page: number = 1) => {
+  return useQuery({
+    // QueryKey quan trọng để React Query biết khi nào cần fetch lại data
+    queryKey: ['products', searchKey, page], 
+    
+    // Gọi hàm API của bạn
+    queryFn: () => searchProduct(searchKey, page),
+
+    // Option: Chỉ fetch khi searchKey có giá trị (tránh gọi API rỗng khi vừa vào trang)
+    enabled: !!searchKey, 
+
+    // Option: Giữ lại dữ liệu cũ trong khi fetch dữ liệu mới (giúp UI không bị giật lag)
+    placeholderData: (previousData) => previousData,
+
+    // Tự động fetch lại sau khi người dùng ngừng gõ (Debounce) thường xử lý ở phía UI
+    staleTime: 5000, // Dữ liệu được coi là mới trong 5 giây
+  });
+};

@@ -6,6 +6,8 @@ use App\Http\Requests\RegisterRequest;
 use App\Services\AuthService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Cookie;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller{
 
@@ -55,16 +57,45 @@ class AuthController extends Controller{
 
     public function logout(Request $request){
 
-        $user_id =  $request->attributes->get('user_id');
+        $id = JWTAuth::parseToken()->authenticate()->id;
 
-        $result = $this->authService->logout((int)$user_id);
-        return response()->json($result)->withoutCookie('refresh_token');
+        $result = $this->authService->logout((int)$id);
+        return response()->json($result)->withCookie(Cookie::forget('refresh_token'));
     }
 
-    public function refresh(Request $request){
-        // Token refresh logic here
-        $reuslt = $this->authService->refresh($request);
-        return response()->json($reuslt)->cookie('refresh_token', $result['token']['refresh_token'] ?? '', 60 * 24 * 30, null, null, false, true);
+    public function refresh(Request $request)
+    {
+        // 1. Lấy refresh token từ cookie
+        $refreshToken = $request->cookie('refresh_token');
+
+        // 2. Gọi Service xử lý
+        $result = $this->authService->refreshToken($refreshToken, $request);
+
+        // 3. Kiểm tra kết quả trả về từ Service
+        if (!$result['success']) {
+            // Nếu lỗi, trả về 401 Unauthorized và xóa cookie cũ
+            return response()->json($result, 401)->withoutCookie('refresh_token');
+        }
+
+        // 4. Nếu thành công, trả về Token mới và Set Cookie mới
+        // Access token trả về trong body, Refresh token nằm trong HttpOnly Cookie
+        $cookie = cookie(
+            'refresh_token',
+            $result['data']['refresh_token'],
+            60 * 24 * 30, // 30 ngày
+            null,
+            null,
+            true, // Secure (HTTPS only - nên để true trên prod)
+            true  // HttpOnly
+        );
+
+        return response()->json([
+            'success' => true,
+            'token' => [
+                'access_token' => $result['data']['access_token'],
+                'expires_in' => $result['data']['expires_in']
+            ]
+        ])->withCookie($cookie);
     }
 
 

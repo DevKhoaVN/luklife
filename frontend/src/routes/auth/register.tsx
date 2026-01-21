@@ -3,6 +3,7 @@ import React, { useState } from "react"; // Import useState
 import { useForm } from "react-hook-form";
 import { Eye, EyeOff } from "lucide-react"; // Import EyeOff
 
+import { useAuth } from "../../hooks/useAuth";
 export const Route = createFileRoute("/auth/register")({
   component: RegisterForm,
 });
@@ -14,6 +15,7 @@ function RegisterForm() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   // ===================================================
 
+  const { registerAsync, isRegisterLoading } = useAuth();
   const {
     register,
     handleSubmit,
@@ -25,8 +27,7 @@ function RegisterForm() {
 
   const onSubmit = async (data) => {
     console.log("Dữ liệu đăng ký:", data);
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    alert(`Đăng ký thành công cho Khách hàng: ${data.name} (SĐT: ${data.sdt})`);
+    registerAsync(data);
   };
 
   return (
@@ -205,10 +206,10 @@ function RegisterForm() {
           {/* Nút Đăng ký */}
           <button
             type="submit"
-            disabled={isSubmitting}
+            disabled={isRegisterLoading}
             className="w-full py-3 mt-6 bg-red-600 text-white font-bold rounded-md hover:bg-red-700 transition duration-200 disabled:bg-red-300"
           >
-            {isSubmitting ? "Đang xử lý đăng ký..." : "Đăng ký"}
+            {isRegisterLoading ? "Đang xử lý đăng ký..." : "Đăng ký"}
           </button>
 
           {/* Link quay về Đăng nhập */}

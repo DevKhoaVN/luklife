@@ -19,7 +19,7 @@ class CheckPermission
     public function handle(Request $request, Closure $next, string $permission)
     {
       try{
-        dd($permission);
+  
             $payload = JWTAuth::parseToken()->getPayload();
 
             // kiem tra user co ton tai khogn
@@ -30,6 +30,7 @@ class CheckPermission
             //kiem tra quyen cua user
 
             $userId = $payload->get('user_id');
+         
 
             $user = Users::with('roles.permissions')->find($userId);
 

@@ -7,7 +7,7 @@ import {
   Package,
   Users,
   BarChart3,
-  Settings,
+  TicketPercent,
   ChevronDown,
   LogOut,
   FileText,
@@ -19,11 +19,12 @@ import {
   Edit2,
 } from "lucide-react";
 import AppContext from "../../../context/AppContext";
+import { logout } from "../../../api/auth.api";
+import { toast } from "react-toastify";
 
-export function Sidebar({ currentUser, onLogout, statsData, isOpen }) {
+export function Sidebar({ currentUser, statsData, isOpen }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { logout } = useContext(AppContext);
   const [openSubmenu, setOpenSubmenu] = useState(null);
 
   // Get active menu from current path
@@ -118,18 +119,18 @@ export function Sidebar({ currentUser, onLogout, statsData, isOpen }) {
       path: "/dashboard/customers",
     },
     {
+      id: "discounts",
+      label: "Mã ưu đãi",
+      icon: TicketPercent,
+      badge: null,
+      path: "/dashboard/discounts",
+    },
+    {
       id: "stock",
       label: "Tồn kho",
       icon: BarChart3,
       badge: null,
       path: "/dashboard/analytics",
-    },
-    {
-      id: "settings",
-      label: "Cài đặt",
-      icon: Settings,
-      badge: null,
-      path: "/dashboard/settings",
     },
   ];
 
@@ -142,7 +143,22 @@ export function Sidebar({ currentUser, onLogout, statsData, isOpen }) {
     }
   };
 
-  const handleLogout = () => {};
+  const handleLogout = () => {
+    console.log("Thực hiện logout cho admin...");
+
+    logout()
+      .then(() => {
+        toast.success("Đăng xuất thành công");
+        // Điều hướng người dùng sau khi thông báo thành công
+        setTimeout(() => {
+          navigate({ to: "/dashboard/login" });
+        }, 1000);
+      })
+      .catch((error) => {
+        console.error("Logout error:", error);
+        toast.error("Có lỗi xảy ra khi đăng xuất");
+      });
+  };
 
   return (
     <aside
@@ -256,7 +272,7 @@ export function Sidebar({ currentUser, onLogout, statsData, isOpen }) {
             </p>
           </div>
           <button
-            onClick={logout}
+            onClick={handleLogout}
             className="p-1.5 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-600 transition-colors"
             title="Đăng xuất"
           >

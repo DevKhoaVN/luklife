@@ -3,11 +3,12 @@ import { DashboardLayout } from "../components/Admin/Layout/DashboardLayout";
 import { useContext } from "react";
 import AppContext from "../context/AppContext";
 import { useStaticData } from "../hooks/Admin";
+import { logout } from "../api/auth.api";
 
 export const Route = createFileRoute("/dashboard")({
   beforeLoad: ({ context, location }) => {
-    const { user, isAuthenticated } = context.auth ?? {};
-    if (!isAuthenticated || !user) {
+    const { user } = context.auth ?? {};
+    if (!user) {
       throw redirect({
         to: "/dashboard/login",
         search: { redirect: location.href },
@@ -17,15 +18,8 @@ export const Route = createFileRoute("/dashboard")({
   },
   component: () => {
     const { currentUser } = Route.useRouteContext();
-    const { logout } = useContext(AppContext);
     const { data: statsData } = useStaticData();
 
-    return (
-      <DashboardLayout
-        currentUser={currentUser}
-        onLogout={logout}
-        statsData={statsData}
-      />
-    );
+    return <DashboardLayout currentUser={currentUser} statsData={statsData} />;
   },
 });

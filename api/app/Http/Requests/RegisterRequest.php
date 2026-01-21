@@ -25,9 +25,9 @@ class RegisterRequest extends FormRequest
             // define register rules
             'full_name' => ['required', 'string', 'max:255'],
             'phone' => ['required', 'string', 'regex:/^[0-9]{9,11}$/'],
-            'gender' => ['required', 'string'],
+            'gender' => ['nullable', 'string'],
             'email' => ['required', 'string', 'email', 'max:255'],
-            'date_of_birth' => ['required', 'date', 'before:today'],
+            'date_of_birth' => ['nullable', 'date', 'before:today'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             
         ];

@@ -18,8 +18,11 @@ class TokenRepositories implements TokenRepositoriesInterface
     public function createToken(array $where, array $values){
         return $this->token::updateOrCreate( $where,  $values);
     }
-    public function deleteToken(string $token){
-        $this->token->where('token_hash', $token)->delete();
+    public function deleteTokensByUserId(int $userId)
+    {
+        return $this->token
+            ->where('user_id', $userId)
+            ->delete();
     }
     public function findToken(string $token){
         

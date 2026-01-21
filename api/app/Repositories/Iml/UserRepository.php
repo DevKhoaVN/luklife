@@ -47,33 +47,21 @@ use Illuminate\Support\Facades\Hash;
       'password' => password_hash($newPassword, PASSWORD_BCRYPT, ['cost' => 12])
     ]);
   }
-  public function updateUser(int $id, array $data){
-
+  public function updateUser(int $id, array $data)
+  {
     $user = $this->user->findOrFail($id);
 
-    // Hash password if provided
     if (isset($data['password'])) {
       $data['password'] = Hash::make($data['password']);
     }
 
+    $user->update($data);  
+
+    return $user;
   }
 
-  public function updatPassword(int $id, string $password)
-  {
-    // Tìm user, nếu không thấy sẽ tự bắn lỗi 404
-    $user = $this->user->findOrFail($id);
 
-    // Kiểm tra nếu có password thì mới cập nhật
-    if ($password) {
-      $user->update([
-        'password' => password_hash($password, PASSWORD_BCRYPT)
-      ]);
-      return true;
-    }
-
-    return $user->fresh();
-  }
-    public function findUserByEmail(string $email)
+  public function findUserByEmail(string $email)
     {
         return $this->user->where('email', $email)->first();
     }

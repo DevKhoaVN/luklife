@@ -3,14 +3,13 @@ import { Outlet } from "@tanstack/react-router";
 import { Sidebar } from "./Sidebar";
 import { Header } from "./Header";
 
-export function DashboardLayout({ currentUser, onLogout, statsData }) {
+export function DashboardLayout({ currentUser, statsData }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
       <Sidebar
         currentUser={currentUser}
-        onLogout={onLogout}
         statsData={statsData}
         isOpen={sidebarOpen}
       />

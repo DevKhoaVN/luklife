@@ -20,13 +20,12 @@ Route::prefix('auth')->group(function () {
 });
 
 
+Route::prefix('auth')->group(function () {
+    Route::post('refresh', [AuthController::class, 'refresh']);
+});
 Route::middleware('auth:api', 'can')->group(function () {
-
     // Auth protected
-    Route::prefix('auth')->group(function () {
-        Route::post('logout', [AuthController::class, 'logout']);
-        Route::post('refresh', [AuthController::class, 'refresh']);
-    });
+    Route::post('logout', [AuthController::class, 'logout']);
 });
 
 Route::prefix('category')->group(function () {
@@ -114,15 +113,27 @@ Route::middleware('can')->group(function () {
 });
 
 // Quản lý Discounts
-Route::middleware(['auth:api'])->prefix('discounts')->group(function () {
-    Route::get('', [DiscountController::class, 'getAllDiscounts']); // Ai cũng xem được?
+Route::prefix('discounts')->group(function () {
 
-    // Các quyền thay đổi dữ liệu
-    Route::post('', [DiscountController::class, 'createDiscount'])->middleware('role:create_discount');
-    Route::put('/{id}', [DiscountController::class, 'updateDiscount'])->middleware('role:edit_discount');
-    Route::delete('/{id}', [DiscountController::class, 'deleteDiscount'])->middleware('role:delete_discount');
-    Route::patch('/{id}/toggle-status', [DiscountController::class, 'toggleStatus'])->middleware('role:edit_discount');
+        // 1. PUBLIC ROUTES (Không cần đăng nhập)
+         // GET /api/v1/discounts
+       Route::get('', [DiscountController::class, 'getAllDiscounts']);
+        // 2. PROTECTED ROUTES (Cần đăng nhập & Quyền)
+       
+        Route::post('', [DiscountController::class, 'createDiscount'])
+            ->middleware('role:create_discount');
+
+        Route::put('/{id}', [DiscountController::class, 'updateDiscount'])
+            ->middleware('role:edit_discount');
+
+        Route::delete('/{id}', [DiscountController::class, 'deleteDiscount'])
+            ->middleware('role:delete_discount');
+
+        Route::patch('/{id}/toggle-status', [DiscountController::class, 'toggleStatus'])
+            ->middleware('role:edit_discount');
+    
 });
+
 
 
 Route::post('/checkout', [CheckoutController::class, 'checkout']);
