@@ -128,6 +128,9 @@
       <excludeFolder url="file://$MODULE_DIR$/api/vendor/spatie/laravel-sluggable" />
       <excludeFolder url="file://$MODULE_DIR$/api/vendor/stella-maris/clock" />
       <excludeFolder url="file://$MODULE_DIR$/api/vendor/tymon/jwt-auth" />
+      <excludeFolder url="file://$MODULE_DIR$/api/vendor/cloudinary-labs/cloudinary-laravel" />
+      <excludeFolder url="file://$MODULE_DIR$/api/vendor/cloudinary/cloudinary_php" />
+      <excludeFolder url="file://$MODULE_DIR$/api/vendor/cloudinary/transformation-builder-sdk" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

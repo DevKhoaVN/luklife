@@ -137,6 +137,9 @@
       <path value="$PROJECT_DIR$/api/vendor/spatie/laravel-sluggable" />
       <path value="$PROJECT_DIR$/api/vendor/predis/predis" />
       <path value="$PROJECT_DIR$/api/vendor/tymon/jwt-auth" />
+      <path value="$PROJECT_DIR$/api/vendor/cloudinary-labs/cloudinary-laravel" />
+      <path value="$PROJECT_DIR$/api/vendor/cloudinary/cloudinary_php" />
+      <path value="$PROJECT_DIR$/api/vendor/cloudinary/transformation-builder-sdk" />
     </include_path>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="8.2" />
