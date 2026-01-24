@@ -7,7 +7,7 @@ export const MENU_CATEGORIES = [{ id: 2, label: "Sale", slug: "sale" }, { id: 3,
 // Dữ liệu footer
 export const footerData = [
   {
-    title: 'VỀ TOKYOLIFE',
+    title: 'VỀ LUKLIFE',
     items: [
       'Chúng tôi là ai',
       'Cam kết của chúng tôi',
@@ -43,7 +43,7 @@ export const contactData = {
   info: [
     { label: 'Tư vấn mua online', value: '024 7308 2882' },
     { label: 'Khiếu nại và bảo hành', value: '024 7300 6999' },
-    { label: 'Email', value: 'cskh@tokyolife.vn' },
+    { label: 'Email', value: 'cskh@luklife.vn' },
   ],
   workingHours: 'Giờ làm việc: 8:30 - 22:00 hàng ngày',
 };
@@ -57,7 +57,7 @@ export const commitments = [
   ];
 
   // Đoạn văn bản mô tả thương hiệu dài (Lấy từ ảnh)
-export const brandDescription = "Tokyolife là cửa hàng bán lẻ đồ gia dụng, hóa mỹ phẩm, phụ kiện chính hãng các thương hiệu Nhật Bản: Inomata, Ebisu, ORP, Tokyo, Momotani, Naturie, Rohto (Hada Labo, Melano CC...), Kose (Dong Softymo), Shiseido (Dong Senka, Anessa, Tsubaki, Uno, U-Program), KAO (Biore, Laurier), Rosette, Unicharm, Roctet, Naris, Meishoku, Chuchu Baby, Deonatulle, Kumono, Tokyo Brush, Okamura, Dentultima, KAI, Pelican... Nước hoa TokyoLife sản xuất tại Pháp. Hóa phẩm lành tính TokyoLife sản xuất tại Nhật Bản. Mỹ phẩm TokyoLife sản xuất tại Nhật Bản, Hàn Quốc. Sản phẩm Thời trang và Phụ kiện hiệu: TokyoLife, TokyoNow, TokyoBasic, TokyoSmart, TokyoSecret. Sản phẩm tiêu dùng hiệu: TokyoLife, TokyoHome, TokyoAward... và nhiều thương hiệu khác sản xuất tại Việt Nam, Trung Quốc, Thái Lan...";
+export const brandDescription = "Luklife là chuỗi cửa hàng tiện ích, chuyên phân phối các dòng sản phẩm gia dụng thông minh, mỹ phẩm và phụ kiện chuẩn Nhật - Hàn. Đối tác chiến lược của các thương hiệu quốc tế: SakuraHome, FujiClean, OsakaStyle, KyotoLab, Hokaido (Hadaowa, MelaX...), Kiko (Dong Soft), Shinsegae (Anesso, Tsuba, U-Pro), KAWA (Biro, Lauri), Rosie, UniMan, Roctet...";
 
   // banner
 export const slidesData = [

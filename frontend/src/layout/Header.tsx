@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext, useRef } from "react";
-import logo from "../../public/assets/header_logo.svg";
+import logo from "../../public/assets/luklife.png";
 
 import {
   Search,
@@ -182,7 +182,7 @@ export default function Header() {
                 <a href="/" className="text-xl sm:text-2xl text-gray-800">
                   <img
                     src={logo}
-                    alt="Tokyolife Logo"
+                    alt="Luklife Logo"
                     className="h-4 sm:h-7  ml-18 sm:ml-0"
                   />
                 </a>
@@ -421,7 +421,7 @@ export default function Header() {
         {/* Header Sidebar */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
           <div>
-            <img src={logo} alt="Tokyolife Logo" className="h-4" />
+            <img src={logo} alt="Luklife Logo" className="h-4" />
             <p className="text-[10px] font-stretch-expanded font-semibold text-gray-500 mt-1">
               Trải nghiệm đến từng phong cách sống.
             </p>

@@ -1,6 +1,6 @@
 import React, { useContext, useState } from "react";
 import { useNavigate, useLocation } from "@tanstack/react-router";
-import logo from "../../../../public/assets/header_logo.svg";
+import logo from "../../../../public/assets/luklife.png";
 import {
   Home,
   ShoppingCart,

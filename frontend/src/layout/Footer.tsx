@@ -3,14 +3,14 @@ import facebook from "../../public/assets/facebook_icon.svg";
 import tiktok from "../../public/assets/tiktok_icon.svg";
 import youtube from "../../public/assets/youtube_icon.svg";
 import zalo from "../../public/assets/zalo_icon.svg";
-import luk_logo from "../../public/assets/logo.svg";
+import luk_logo from "../../public/assets/luklife.png";
 // Import icon từ Lucide React
 import { ChevronDown, ChevronUp, Mail } from "lucide-react";
 
 // Dữ liệu Footer (Giữ nguyên)
 const footerData = [
   {
-    title: "VỀ TOKYOLIFE",
+    title: "VỀ LUKLIFE",
     items: [
       "Chúng tôi là ai",
       "Cam kết của chúng tôi",
@@ -45,7 +45,7 @@ const contactData = {
   info: [
     { label: "Tư vấn mua online", value: "024 7308 2882" },
     { label: "Khiếu nại và bảo hành", value: "024 7300 6999" },
-    { label: "Email", value: "cskh@tokyolife.vn" },
+    { label: "Email", value: "cskh@luklife.vn" },
   ],
   workingHours: "Giờ làm việc: 8:30 - 22:00 hàng ngày",
 };

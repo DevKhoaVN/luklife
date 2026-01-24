@@ -1,4 +1,4 @@
-import CardVochuer from "./components/CardVochuer.tsx";
+import CardVoucher from "./components/CardVochuer.tsx";
 import HotProductSection from "./components/HotProductSection.tsx";
 function App() {
   return (
@@ -6,12 +6,12 @@ function App() {
       <main className=" max-w-7xl mx-auto px-4 py-4">
         <section className="mt-16">
           <h2 className="title-primary text-xl uppercase  text-center font-bold mb-4">
-            Nhận vochuer độc quyền online
+            Nhận voucher độc quyền online
           </h2>
           <div className="flex justify-center items-center">
-            <CardVochuer code="YEARA26" discount="100K" minOrder={699000} />
-            <CardVochuer code="YEARA26" discount="100K" minOrder={699000} />
-            <CardVochuer code="YEARA26" discount="100K" minOrder={699000} />
+            <CardVoucher code="YEARA26" discount="100K" minOrder={699000} />
+            <CardVoucher code="YEARA26" discount="100K" minOrder={699000} />
+            <CardVoucher code="YEARA26" discount="100K" minOrder={699000} />
           </div>
         </section>
 

@@ -79,7 +79,7 @@ function Index() {
         </div>
         <section className="my-16">
           <h2 className="title-primary text-xl uppercase  text-center font-bold mb-4">
-            Nhận vochuer độc quyền online
+            Nhận voucher độc quyền online
           </h2>
           <div className="flex justify-center items-center">
             <CardVochuer code="YEARA26" discount="100K" minOrder={699000} />
@@ -153,9 +153,8 @@ function Index() {
             <div className="relative">
               <blockquote className="text-base leading-relaxed italic px-8">
                 <p className="mb-4 font-semibold">
-                  Tokyolife trân trọng cám ơn Quý Khách đã ủng hộ và góp phần
-                  tạo thêm cơ hội việc làm cho{" "}
-                  <span className="text-yellow-300">142 người khuyết tật.</span>
+                Luklife trân trọng cảm ơn sự đồng hành của Quý Khách, góp phần tạo nên quỹ hỗ trợ việc làm cho{" "}
+                  <span className="text-yellow-300">150 nhân sự tài năng</span> vượt lên nghịch cảnh.
                 </p>
                 <p className="text-sm font-light leading-relaxed">
                   {brandDescription}
